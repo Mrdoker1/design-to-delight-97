@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  base: "/design-to-delight-97/",
   plugins: [
     react(),
     mode === 'development' &&
