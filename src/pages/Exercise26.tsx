@@ -19,16 +19,16 @@ const Exercise26: React.FC = () => {
     <div
       className="shadow-[0px_4px_0px_0px_#D6DEE6,4px_1px_14px_0px_#D6DEE6] overflow-hidden bg-white"
     >
-      <div className="gap-5 flex max-md:flex-col max-md:items-stretch">
+      <div className="flex max-md:flex-col max-md:items-stretch">
         <div className="w-1/5 max-md:w-full max-md:ml-0">
           <Sidebar />
         </div>
         <div
-          className="w-4/5 ml-5 max-md:w-full max-md:ml-0"
+          className="w-4/5  max-md:w-full max-md:ml-0"
         >
           <div className="flex w-full flex-col items-stretch max-md:max-w-full">
             <Navbar />
-            <main className="self-center flex w-[900px] max-w-full flex-col items-stretch mt-10">
+            <main className="self-center flex w-full pl-10 flex-col items-stretch mt-10">
               <Breadcrumbs items={breadcrumbItems} />
               <div className="w-full mt-14 max-md:mt-10">
                 <ExerciseHeader 
@@ -36,7 +36,7 @@ const Exercise26: React.FC = () => {
                   id="exercis..." 
                   isLive={true} 
                 />
-                <div className="w-full mt-6">
+                <div className="w-full max-w-[900px] mt-6">
                   <InstructionForm 
                     initialInstruction="Look, something new!" 
                     showToUsers={false} 

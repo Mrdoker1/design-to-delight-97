@@ -144,7 +144,7 @@ const ResourceBundle: React.FC = () => {
                 </div>
               </div>
             </div>
-            <button className="flex text-[#116EEE] font-bold text-center">
+            <button className="flex items-end text-[#116EEE] font-bold text-center">
               <div className="justify-center items-center border-[color:var(--Button-Primary-Base,#116EEE)] flex min-h-9 px-6 py-2 rounded-3xl border-2 border-solid max-md:px-5">
                 <div className="text-[#116EEE] self-stretch gap-1 my-auto">
                   Request audio

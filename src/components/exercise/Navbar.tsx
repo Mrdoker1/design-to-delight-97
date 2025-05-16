@@ -3,31 +3,10 @@ import React from "react";
 const Navbar: React.FC = () => {
   return (
     <header
-      className="items-stretch shadow-[0px_2px_8px_0px_rgba(0,0,0,0.10)] flex w-full gap-[40px_91px] flex-wrap bg-white px-[25px] py-3 max-md:max-w-full max-md:pr-5"
+      className="items-stretch shadow-[0px_2px_8px_0px_rgba(0,0,0,0.10)] flex w-full justify-end gap-[40px_91px] flex-wrap bg-white px-[25px] py-3 max-md:max-w-full max-md:pr-5"
       role="banner"
     >
-      <div className="flex flex-col overflow-hidden text-sm text-[#666E7E] grow-0 shrink-0 basis-0 w-fit">
-        <div className="overflow-hidden px-1">
-          <div
-            className="text-[#666E7E] font-bold"
-          >
-            Complete English
-          </div>
-          <div className="flex items-center gap-1 overflow-hidden font-medium mt-1">
-            <div
-              className="text-[#666E7E] self-stretch my-auto"
-            >
-              English ·
-            </div>
-            <div
-              className="text-[#666E7E] self-stretch h-[18px] gap-2 my-auto"
-            >
-              All languages
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 text-base text-[#252B2F] font-bold flex-wrap grow shrink basis-auto max-md:max-w-full">
+      <div className="flex items-center justify-end gap-2 text-base text-[#252B2F] font-bold flex-wrap shrink basis-auto max-md:max-w-full">
         <img
           src="https://cdn.builder.io/api/v1/image/assets/a61b8aff1f9a4d4b8c540558ab06b276/c79b949eedc8dd2b625369d3a0330abc899c5558?placeholderIfAbsent=true"
           className="aspect-[1] object-contain w-6 self-stretch shrink-0 my-auto"
