@@ -1,11 +1,12 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import React from "react";
+import Exercise26 from "./Exercise26";
 
-const Index = () => {
+const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gray-50 p-4">
+      <h1 className="text-2xl font-bold text-center mb-8">Language Learning Platform</h1>
+      <div className="max-w-[1200px] mx-auto">
+        <Exercise26 />
       </div>
     </div>
   );
