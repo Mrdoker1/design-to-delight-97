@@ -35,7 +35,7 @@ const ResourceBundle: React.FC = () => {
   const flashcardInputRef = useRef<HTMLInputElement>(null);
   const audioMenuRef = useRef<HTMLDivElement>(null);
 
-  // Настоящие голоса из ElevenLabs
+  // Real voices from ElevenLabs
   const availableVoices: Voice[] = [
     { id: "pNInz6obpgDQGcFmaJgB", name: "American English (Male)", accent: "american", gender: "male" },
     { id: "21m00Tcm4TlvDq8ikWAM", name: "American English (Female)", accent: "american", gender: "female" },
@@ -92,22 +92,22 @@ const ResourceBundle: React.FC = () => {
       } else {
         audioRef.current.play().catch(error => {
           console.error("Error playing audio:", error);
-          alert("Не удалось воспроизвести аудио. Пожалуйста, попробуйте еще раз.");
+          alert("Failed to play audio. Please try again.");
         });
       }
     }
   };
 
   const updateFlashcardTextBeforeGenerate = () => {
-    // Обновим текст из инпута перед генерацией
+    // Update text from the input before generation
     if (flashcardInputRef.current) {
       setFlashcardText(flashcardInputRef.current.value);
     }
   };
 
-  // Форматируем текст с использованием SSML для образовательного контекста
+  // Format text with SSML for educational context
   const formatTextWithSSML = (text: string): string => {
-    // Используем SSML для контроля произношения с паузами для более четкого восприятия
+    // Use SSML for control pronunciation with pauses for clearer perception
     return `<speak>
       <prosody rate="1.0">
         <break time="0.5s" />
@@ -117,25 +117,25 @@ const ResourceBundle: React.FC = () => {
     </speak>`;
   };
 
-  // Получаем настройки голоса для образовательного контекста
+  // Get voice settings for educational context
   const getVoiceSettings = (): VoiceSettings => {
-    // Настройки для образовательного контекста: более четкое произношение
+    // Settings for educational context: clearer pronunciation
     return {
-      stability: 0.85, // Повышенная стабильность для четкости
-      similarity_boost: 0.5, // Уменьшенная эмоциональность
-      style: 0, // Нейтральный стиль
-      use_speaker_boost: true // Улучшение качества голоса
+      stability: 0.85, // Increased stability for clarity
+      similarity_boost: 0.5, // Reduced emotionality
+      style: 0, // Neutral style
+      use_speaker_boost: true // Improved voice quality
     };
   };
 
   const selectVoiceAndGenerate = (voiceId: string) => {
-    setSelectedVoice("");  // Сбрасываем выбор после использования, чтобы не оставалась подсветка
+    setSelectedVoice("");  // Reset selection after use, so as not to remain highlighted
     setShowVoiceSelector(false);
     setShowAudioMenu(false);
     handleGenerateAudio(voiceId);
   };
   
-  // Добавим обработчик для закрытия выпадающего меню при клике вне него
+  // Add handler for closing dropdown when clicking outside it
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (audioMenuRef.current && !audioMenuRef.current.contains(event.target as Node)) {
@@ -151,50 +151,50 @@ const ResourceBundle: React.FC = () => {
   
   const handleRequestAudio = () => {
     setShowAudioMenu(false);
-    // Здесь будет функционал запроса аудио от пользователя
-    alert("Запрос аудио функциональность будет добавлена позже");
+    // Here will be the functionality to request audio from the user
+    alert("Audio request functionality will be added later");
   };
 
   const handleGenerateAudio = async (voiceId?: string) => {
     try {
       setIsGeneratingAudio(true);
-      setAudioGenStatus("Генерация аудио...");
+      setAudioGenStatus("Generating audio...");
       
-      // Гарантированно получаем самый свежий текст из инпута
+      // Guaranteed to get the freshest text from the input
       updateFlashcardTextBeforeGenerate();
       
-      // Текст для генерации озвучки
+      // Text for voice generation
       const rawText = flashcardText.trim() || "Hello!";
       
-      // Форматируем текст с SSML для образовательного контекста
+      // Format text with SSML for educational context
       const textToGenerate = formatTextWithSSML(rawText);
       
-      // Используем настоящий API-ключ ElevenLabs
+      // Use real ElevenLabs API key
       const apiKey = "sk_e930a10797fbee9e1ccaf573c53c2622cec9dc2ff6253a49";
       
-      // Используем переданный ID голоса, если не передан - проверяем, что выбран голос
+      // Use passed voice ID, if not passed - check that voice is selected
       if (!voiceId && !selectedVoice) {
-        alert("Пожалуйста, выберите голос перед генерацией аудио");
+        alert("Please select a voice before generating audio");
         setIsGeneratingAudio(false);
         return;
       }
       
       const finalVoiceId = voiceId || selectedVoice;
 
-      // Получаем настройки голоса для образовательного контекста
+      // Get voice settings for educational context
       const voiceSettings = getVoiceSettings();
 
-      console.log(`Генерация аудио для текста: "${rawText}" с голосом ID: ${finalVoiceId}`);
-      console.log(`Используется образовательное произношение с SSML`);
+      console.log(`Generating audio for text: "${rawText}" with voice ID: ${finalVoiceId}`);
+      console.log(`Using educational pronunciation with SSML`);
       
       try {
-        const modelId = 'eleven_multilingual_v2'; // Используем многоязычную модель для лучшего произношения
+        const modelId = 'eleven_multilingual_v2'; // Use multilingual model for better pronunciation
         
         const requestBody: ElevenLabsRequestBody = {
           text: textToGenerate,
           model_id: modelId,
           voice_settings: voiceSettings,
-          text_type: 'ssml' // Всегда используем SSML
+          text_type: 'ssml' // Always use SSML
         };
         
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${finalVoiceId}`, {
@@ -208,24 +208,24 @@ const ResourceBundle: React.FC = () => {
         });
         
         if (!response.ok) {
-          throw new Error(`Ошибка генерации аудио: ${response.status} ${response.statusText}`);
+          throw new Error(`Audio generation error: ${response.status} ${response.statusText}`);
         }
         
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
         setAudioSrc(audioUrl);
-        setAudioGenStatus("Аудио успешно сгенерировано");
+        setAudioGenStatus("Audio successfully generated");
         
-        console.log(`Аудио успешно сгенерировано для текста: "${rawText}"`);
+        console.log(`Audio successfully generated for text: "${rawText}"`);
       } catch (error) {
-        console.error("Ошибка при запросе к API ElevenLabs:", error);
-        setAudioGenStatus("Ошибка генерации аудио");
+        console.error("Error requesting ElevenLabs API:", error);
+        setAudioGenStatus("Audio generation error");
         throw error;
       }
       
     } catch (error) {
-      console.error("Ошибка генерации аудио:", error);
-      alert("Не удалось сгенерировать аудио. Пожалуйста, попробуйте еще раз.");
+      console.error("Audio generation error:", error);
+      alert("Failed to generate audio. Please try again.");
     } finally {
       setIsGeneratingAudio(false);
       setShowVoiceSelector(false);
@@ -389,7 +389,7 @@ const ResourceBundle: React.FC = () => {
                           />
                         </div>
                         
-                        {/* Разделительная линия */}
+                        {/* Divider line */}
                         <div className="absolute right-[36px] -top-3 -bottom-3 w-[1px] bg-[#C8CACB]"></div>
                         
                         <button 
