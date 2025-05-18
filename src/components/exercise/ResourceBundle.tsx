@@ -169,8 +169,10 @@ const ResourceBundle: React.FC = () => {
       // Format text with SSML for educational context
       const textToGenerate = formatTextWithSSML(rawText);
       
-      // Use real ElevenLabs API key
-      const apiKey = "sk_e930a10797fbee9e1ccaf573c53c2622cec9dc2ff6253a49";
+      // Используем API ключ из переменных окружения
+      const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+
+      console.log("API Key:", apiKey);
       
       // Use passed voice ID, if not passed - check that voice is selected
       if (!voiceId && !selectedVoice) {
