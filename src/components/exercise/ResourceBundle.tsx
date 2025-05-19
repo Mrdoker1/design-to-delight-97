@@ -43,10 +43,16 @@ const ResourceBundle: React.FC = () => {
 
   // Real voices from ElevenLabs
   const availableVoices: Voice[] = [
-    { id: "pNInz6obpgDQGcFmaJgB", name: "American English (Male)", accent: "american", gender: "male" },
-    { id: "21m00Tcm4TlvDq8ikWAM", name: "American English (Female)", accent: "american", gender: "female" },
-    { id: "TxGEqnHWrfWFTfGW9XjX", name: "British English (Male)", accent: "british", gender: "male" },
-    { id: "AZnzlk1XvdvUeBnXmlld", name: "British English (Female)", accent: "british", gender: "female" },
+    // American voices
+    { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel (American Female)", accent: "american", gender: "female" },
+    { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi (American Female)", accent: "american", gender: "female" },
+    { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh (American Male)", accent: "american", gender: "male" },
+    { id: "pNInz6obpgDQGcFmaJgB", name: "Adam (American Male)", accent: "american", gender: "male" },
+    // British voices
+    { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella (British Female)", accent: "british", gender: "female" },
+    { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli (British Female)", accent: "british", gender: "female" },
+    { id: "VR6AewLTigWG4xSOukaG", name: "Antoni (British Male)", accent: "british", gender: "male" },
+    { id: "ErXwobaYiN019PkySvjV", name: "Thomas (British Male)", accent: "british", gender: "male" },
   ];
 
   useEffect(() => {
@@ -136,9 +142,9 @@ const ResourceBundle: React.FC = () => {
   const getVoiceSettings = (): VoiceSettings => {
     // Settings for educational context: clearer pronunciation
     return {
-      stability: 0.85, // Increased stability for clarity
-      similarity_boost: 0.5, // Reduced emotionality
-      style: 0, // Neutral style
+      stability: 0.75, // Reduced stability for more natural variations
+      similarity_boost: 0.75, // Increased for more natural voice
+      style: 0.2, // Added some style variation
       use_speaker_boost: true // Improved voice quality
     };
   };
