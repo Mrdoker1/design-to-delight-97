@@ -5,6 +5,17 @@ interface Voice {
   name: string;
   accent: string;
   gender: string;
+  style?: string;
+  isPremium: boolean;
+  preview_url?: string;
+  category?: string;
+  description?: string;
+  labels?: {
+    accent?: string;
+    gender?: string;
+    age?: string;
+    [key: string]: string | undefined;
+  };
 }
 
 interface VoiceSettings {
@@ -21,6 +32,25 @@ interface ElevenLabsRequestBody {
   text_type?: 'ssml' | 'text';
 }
 
+interface ElevenLabsVoice {
+  voice_id: string;
+  name: string;
+  category: string;
+  description: string;
+  preview_url: string;
+  labels: {
+    accent?: string;
+    gender?: string;
+    age?: string;
+    style?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+interface ElevenLabsResponse {
+  voices: ElevenLabsVoice[];
+}
+
 const ResourceBundle: React.FC = () => {
   const [alternativeValue, setAlternativeValue] = useState("");
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -35,25 +65,70 @@ const ResourceBundle: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isVolumeHovered, setIsVolumeHovered] = useState(false);
+  const [voiceSearchQuery, setVoiceSearchQuery] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
+  const [isLoadingVoices, setIsLoadingVoices] = useState(true);
+  const [voiceLoadError, setVoiceLoadError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const flashcardInputRef = useRef<HTMLInputElement>(null);
   const audioMenuRef = useRef<HTMLDivElement>(null);
   const volumeInputRef = useRef<HTMLInputElement>(null);
   const progressInputRef = useRef<HTMLInputElement>(null);
 
-  // Real voices from ElevenLabs
-  const availableVoices: Voice[] = [
-    // American voices
-    { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel (American Female)", accent: "american", gender: "female" },
-    { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi (American Female)", accent: "american", gender: "female" },
-    { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh (American Male)", accent: "american", gender: "male" },
-    { id: "pNInz6obpgDQGcFmaJgB", name: "Adam (American Male)", accent: "american", gender: "male" },
-    // British voices
-    { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella (British Female)", accent: "british", gender: "female" },
-    { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli (British Female)", accent: "british", gender: "female" },
-    { id: "VR6AewLTigWG4xSOukaG", name: "Antoni (British Male)", accent: "british", gender: "male" },
-    { id: "ErXwobaYiN019PkySvjV", name: "Thomas (British Male)", accent: "british", gender: "male" },
-  ];
+  // Функция для получения списка голосов от ElevenLabs API
+  const fetchVoices = async () => {
+    try {
+      setIsLoadingVoices(true);
+      setVoiceLoadError(null);
+      
+      const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+      const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+        headers: {
+          'Accept': 'application/json',
+          'xi-api-key': apiKey
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch voices: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json() as ElevenLabsResponse;
+      
+      // Фильтруем только американские и британские голоса и преобразуем в наш формат
+      const filteredVoices = data.voices
+        .filter((voice: ElevenLabsVoice) => {
+          const accent = voice.labels?.accent?.toLowerCase() || '';
+          return accent.includes('american') || accent.includes('british');
+        })
+        .map((voice: ElevenLabsVoice) => ({
+          id: voice.voice_id,
+          name: voice.name,
+          accent: voice.labels?.accent?.toLowerCase().includes('british') ? 'british' : 'american',
+          gender: voice.labels?.gender?.toLowerCase() || 'unknown',
+          style: voice.labels?.style?.toLowerCase() || 'professional narrator',
+          isPremium: voice.category === 'premium',
+          preview_url: voice.preview_url,
+          category: voice.category,
+          description: voice.description,
+          labels: voice.labels
+        }));
+
+      setAvailableVoices(filteredVoices);
+    } catch (error) {
+      console.error('Error fetching voices:', error);
+      setVoiceLoadError(error instanceof Error ? error.message : 'Failed to load voices');
+    } finally {
+      setIsLoadingVoices(false);
+    }
+  };
+
+  // Загружаем голоса при монтировании компонента
+  useEffect(() => {
+    fetchVoices();
+  }, []);
 
   useEffect(() => {
     const audioElement = audioRef.current;
@@ -83,6 +158,12 @@ const ResourceBundle: React.FC = () => {
     }
   }, [audioSrc]);
 
+  useEffect(() => {
+    if (audioSrc) {
+      setShowAudioMenu(false);
+    }
+  }, [audioSrc]);
+
   const handleFlashcardTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFlashcardText(e.target.value);
   };
@@ -104,6 +185,7 @@ const ResourceBundle: React.FC = () => {
     }
     setAudioSrc(null);
     setIsPlaying(false);
+    setShowAudioMenu(false);
   };
 
   const togglePlay = () => {
@@ -173,7 +255,7 @@ const ResourceBundle: React.FC = () => {
   const handleRequestAudio = () => {
     setShowAudioMenu(false);
     // Here will be the functionality to request audio from the user
-    alert("Audio request functionality will be added later");
+    alert("Audio request functionality is not available in the prototype");
   };
 
   const handleGenerateAudio = async (voiceId?: string) => {
@@ -238,6 +320,7 @@ const ResourceBundle: React.FC = () => {
         const audioUrl = URL.createObjectURL(audioBlob);
         setAudioSrc(audioUrl);
         setAudioGenStatus("Audio successfully generated");
+        setShowAudioMenu(false);
         
         console.log(`Audio successfully generated for text: "${rawText}"`);
       } catch (error) {
@@ -252,6 +335,7 @@ const ResourceBundle: React.FC = () => {
     } finally {
       setIsGeneratingAudio(false);
       setShowVoiceSelector(false);
+      setShowAudioMenu(false);
     }
   };
 
@@ -311,6 +395,62 @@ const ResourceBundle: React.FC = () => {
       audioRef.current.currentTime = time;
       updateProgressSliderBackground();
     }
+  };
+
+  // Обновляем функцию фильтрации голосов
+  const filteredVoices = availableVoices.filter(voice => {
+    const matchesSearch = voiceSearchQuery === '' || 
+      voice.name.toLowerCase().includes(voiceSearchQuery.toLowerCase());
+    
+    const matchesTags = selectedTags.length === 0 || 
+      selectedTags.every(tag => 
+        tag === 'all' ||
+        voice.accent === tag || 
+        voice.gender === tag || 
+        (tag === 'premium' && voice.isPremium) ||
+        (voice.labels && Object.values(voice.labels).some(label => label === tag))
+      );
+    
+    return matchesSearch && matchesTags;
+  });
+
+  // Извлекаем все уникальные теги из голосов
+  const getUniqueTags = (): string[] => {
+    const accents = new Set(availableVoices.map(voice => voice.accent));
+    const genders = new Set(availableVoices.map(voice => voice.gender));
+    const categories = new Set(availableVoices.map(voice => voice.category || '').filter(Boolean));
+    
+    // Собираем все уникальные метки, исключая те, что уже есть в основных категориях
+    const allLabels = new Set(
+      availableVoices.flatMap(voice => 
+        Object.entries(voice.labels || {})
+          .filter(([key, value]) => 
+            !['accent', 'gender'].includes(key) && 
+            value !== voice.accent &&
+            value !== voice.gender &&
+            Boolean(value)
+          )
+          .map(([_, value]) => value)
+      )
+    );
+    
+    return ['all', ...Array.from(accents), ...Array.from(genders), 
+            ...Array.from(categories), ...Array.from(allLabels)];
+  };
+  
+  // Обновляем функцию выбора тега
+  const handleTagSelect = (tag: string) => {
+    setSelectedTags(prevTags => {
+      if (prevTags.includes(tag)) {
+        return prevTags.filter(t => t !== tag);
+      } else {
+        return [...prevTags, tag];
+      }
+    });
+  };
+
+  const handleVoiceSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVoiceSearchQuery(e.target.value);
   };
 
   return (
@@ -409,115 +549,115 @@ const ResourceBundle: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex w-full gap-4 text-sm justify-center flex-wrap mt-4 max-md:max-w-full">
-            <div className="min-w-60 overflow-hidden flex-1 shrink basis-[0%] max-md:max-w-full">
-              <div className="w-full overflow-hidden max-md:max-w-full">
-                <div className="flex w-full max-w-[868px] flex-col text-[#666E7E] font-normal whitespace-nowrap max-md:max-w-full max-md:pr-5">
-                  <div className="text-[#666E7E] self-stretch z-10 gap-2 px-1">
-                    Audio
+          <div className="flex w-full flex-col mt-4 max-md:max-w-full">
+            <div className="flex w-full max-w-[868px] text-[#666E7E] font-normal whitespace-nowrap max-md:max-w-full max-md:pr-5">
+              <div className="text-[#666E7E] self-stretch z-10 gap-2 px-1">
+                Audio
+              </div>
+            </div>
+            
+            {audioSrc ? (
+              <div className="border border-[color:var(--Neutral-UI-Divider,#DAE1EA)] flex w-full px-4 py-3 rounded-lg border-solid bg-white mt-2">
+                <div className="flex items-center w-full">
+                  <div className="flex items-center w-full relative">
+                    <div className="flex items-center space-x-3 w-full">
+                      <button 
+                        onClick={togglePlay}
+                        className="text-gray-600 hover:text-gray-800 flex-shrink-0"
+                      >
+                        {isPlaying ? (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="7" y="5" width="3" height="14" rx="1" fill="currentColor"/>
+                            <rect x="14" y="5" width="3" height="14" rx="1" fill="currentColor"/>
+                          </svg>
+                        ) : (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 5L19 12L7 19V5Z" fill="currentColor"/>
+                          </svg>
+                        )}
+                      </button>
+                      
+                      {/* Время воспроизведения */}
+                      <div className="text-xs text-gray-600 min-w-[70px]">
+                        {formatTime(currentTime)} / {formatTime(duration)}
+                      </div>
+                      
+                      <div className="flex items-center flex-1">
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="100" 
+                          ref={progressInputRef}
+                          className="w-full h-1 appearance-none bg-[#999999] rounded-full cursor-pointer outline-none focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black [&::-moz-range-thumb]:border-none [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent"
+                          onChange={handleProgressChange}
+                        />
+                      </div>
+                      
+                      {/* Регулировка громкости */}
+                      <div className="flex items-center ml-2">
+                        <div 
+                          onMouseEnter={() => setIsVolumeHovered(true)}
+                          onMouseLeave={() => setIsVolumeHovered(false)}
+                          className="relative flex items-center"
+                        >
+                          <div className="flex items-center overflow-hidden">
+                            <div 
+                              className={`transition-all duration-300 ease-in-out overflow-hidden flex items-center ${isVolumeHovered ? 'w-14 opacity-100 mr-1' : 'w-0 opacity-0'}`}
+                            >
+                              <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                value={volume}
+                                ref={volumeInputRef}
+                                className="w-full h-1 appearance-none bg-[#999999] rounded-full cursor-pointer outline-none focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-2 [&::-moz-range-thumb]:w-2 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black [&::-moz-range-thumb]:border-none [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent"
+                                onChange={handleVolumeChange}
+                              />
+                            </div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+                              <path d="M3 9H7L12 4V20L7 15H3V9Z" fill="currentColor"/>
+                              {volume > 0.5 ? (
+                                <>
+                                  <path d="M16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z" fill="currentColor"/>
+                                  <path d="M14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z" fill="currentColor"/>
+                                </>
+                              ) : volume > 0 ? (
+                                <path d="M16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z" fill="currentColor"/>
+                              ) : (
+                                <path d="M14 8.83v1.66L15.17 12 14 13.17v1.66L17.17 12 14 8.83z" fill="currentColor"/>
+                              )}
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <audio 
+                        ref={audioRef} 
+                        src={audioSrc} 
+                        className="hidden" 
+                        preload="auto"
+                      />
+                    </div>
+                    
+                    {/* Divider line */}
+                    <div className="absolute right-[36px] -top-3 -bottom-3 w-[1px] bg-[#DAE1EA]"></div>
+                    
+                    <button 
+                      onClick={handleRemoveAudio}
+                      className="text-gray-600 hover:text-gray-800 flex-shrink-0 ml-8"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
-                
-                {audioSrc ? (
-                  <div className="border border-[color:var(--Neutral-UI-Divider,#DAE1EA)] flex w-full px-4 py-3 rounded-lg border-solid bg-white mt-2">
-                    <div className="flex items-center w-full">
-                      <div className="flex items-center w-full relative">
-                        <div className="flex items-center space-x-3 w-full">
-                          <button 
-                            onClick={togglePlay}
-                            className="text-gray-600 hover:text-gray-800 flex-shrink-0"
-                          >
-                            {isPlaying ? (
-                              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="7" y="5" width="3" height="14" rx="1" fill="currentColor"/>
-                                <rect x="14" y="5" width="3" height="14" rx="1" fill="currentColor"/>
-                              </svg>
-                            ) : (
-                              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M7 5L19 12L7 19V5Z" fill="currentColor"/>
-                              </svg>
-                            )}
-                          </button>
-                          
-                          {/* Время воспроизведения */}
-                          <div className="text-xs text-gray-600 min-w-[70px]">
-                            {formatTime(currentTime)} / {formatTime(duration)}
-                          </div>
-                          
-                          <div className="flex items-center flex-1">
-                            <input 
-                              type="range" 
-                              min="0" 
-                              max="100" 
-                              ref={progressInputRef}
-                              className="w-full h-1 appearance-none bg-[#999999] rounded-full cursor-pointer outline-none focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black [&::-moz-range-thumb]:border-none [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent"
-                              onChange={handleProgressChange}
-                            />
-                          </div>
-                          
-                          {/* Регулировка громкости */}
-                          <div className="flex items-center ml-2">
-                            <div 
-                              onMouseEnter={() => setIsVolumeHovered(true)}
-                              onMouseLeave={() => setIsVolumeHovered(false)}
-                              className="relative flex items-center"
-                            >
-                              <div className="flex items-center overflow-hidden">
-                                <div 
-                                  className={`transition-all duration-300 ease-in-out overflow-hidden flex items-center ${isVolumeHovered ? 'w-14 opacity-100 mr-1' : 'w-0 opacity-0'}`}
-                                >
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max="1"
-                                    step="0.01"
-                                    value={volume}
-                                    ref={volumeInputRef}
-                                    className="w-full h-1 appearance-none bg-[#999999] rounded-full cursor-pointer outline-none focus:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-2 [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:h-2 [&::-moz-range-thumb]:w-2 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black [&::-moz-range-thumb]:border-none [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent"
-                                    onChange={handleVolumeChange}
-                                  />
-                                </div>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-                                  <path d="M3 9H7L12 4V20L7 15H3V9Z" fill="currentColor"/>
-                                  {volume > 0.5 ? (
-                                    <>
-                                      <path d="M16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z" fill="currentColor"/>
-                                      <path d="M14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z" fill="currentColor"/>
-                                    </>
-                                  ) : volume > 0 ? (
-                                    <path d="M16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z" fill="currentColor"/>
-                                  ) : (
-                                    <path d="M14 8.83v1.66L15.17 12 14 13.17v1.66L17.17 12 14 8.83z" fill="currentColor"/>
-                                  )}
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <audio 
-                            ref={audioRef} 
-                            src={audioSrc} 
-                            className="hidden" 
-                            preload="auto"
-                          />
-                        </div>
-                        
-                        {/* Divider line */}
-                        <div className="absolute right-[36px] -top-3 -bottom-3 w-[1px] bg-[#DAE1EA]"></div>
-                        
-                        <button 
-                          onClick={handleRemoveAudio}
-                          className="text-gray-600 hover:text-gray-800 flex-shrink-0 ml-8"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="justify-center items-center border border-[color:var(--Greyscale-Black-25,#C8CACB)] flex w-full flex-col text-[#252B2F] font-bold text-center bg-white mt-2 py-2.5 rounded-lg border-dashed max-md:max-w-full max-md:px-5">
+              </div>
+            ) : (
+              <div className="flex w-full gap-4 text-sm justify-between flex-wrap mt-2">
+                <div className="min-w-60 overflow-hidden flex-1 shrink basis-[0%] max-md:max-w-full">
+                  <div className="justify-center items-center border border-[color:var(--Greyscale-Black-25,#C8CACB)] flex w-full flex-col text-[#252B2F] font-bold text-center bg-white py-2.5 rounded-lg border-dashed max-md:max-w-full max-md:px-5">
                     <div className="flex items-center justify-center gap-2 overflow-hidden">
                       <img
                         src="https://cdn.builder.io/api/v1/image/assets/a61b8aff1f9a4d4b8c540558ab06b276/405af0eb7e5783dbd84c64e7a4482a3886e6bc24?placeholderIfAbsent=true"
@@ -543,76 +683,176 @@ const ResourceBundle: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-col items-end justify-end gap-2 p-1">
-              <div className="relative w-auto" ref={audioMenuRef}>
-                                  <button 
-                  className="flex items-center justify-center text-white font-bold text-center w-auto"
-                  onClick={() => setShowAudioMenu(!showAudioMenu)}
-                  disabled={isGeneratingAudio}
-                >
-                                      <div className="items-center justify-between border-[#116EEE] border-2 border-solid flex w-auto min-h-9 px-4 py-2 rounded-3xl whitespace-nowrap">
-                    <div className="text-[#116EEE] whitespace-nowrap flex-1 text-right pr-3">
-                      Get audio
-                    </div>
-                    <div className="h-5 w-[2px] bg-[#116EEE]"></div>
-                    <div className="text-[#116EEE] flex-1 pl-3">
-                      ▼
-                    </div>
-                  </div>
-                </button>
+                </div>
                 
-                {showAudioMenu && (
-                  <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-20 w-[200px]">
-                    <div 
-                      className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-medium"
-                      onClick={handleRequestAudio}
+                <div className="flex flex-col items-end justify-end gap-2 p-1">
+                  <div className="relative w-auto" ref={audioMenuRef}>
+                    <button 
+                      className="flex items-center justify-center text-white font-bold text-center w-auto"
+                      onClick={() => !audioSrc && setShowAudioMenu(!showAudioMenu)}
+                      disabled={isGeneratingAudio || audioSrc !== null}
                     >
-                      Request audio
-                    </div>
-                    <div 
-                      className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-medium"
-                      onClick={() => setShowVoiceSelector(true)}
-                    >
-                      Generate audio
-                    </div>
-                  </div>
-                )}
-                
-                {showVoiceSelector && (
-                  <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-20 w-[240px]">
-                    <div className="flex items-center mb-2 border-b pb-1">
-                      <div 
-                        className="cursor-pointer text-gray-500 hover:text-gray-700 flex items-center"
-                        onClick={() => setShowVoiceSelector(false)}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/>
-                        </svg>
+                      <div className="items-center justify-between border-[#116EEE] border-2 border-solid flex w-auto min-h-9 px-4 py-2 rounded-3xl whitespace-nowrap">
+                        <div className="text-[#116EEE] whitespace-nowrap flex-1 text-right pr-3">
+                          Get audio
+                        </div>
+                        <div className="h-5 w-[2px] bg-[#116EEE]"></div>
+                        <div className="text-[#116EEE] flex-1 pl-3">
+                          ▼
+                        </div>
                       </div>
-                      <div className="font-medium text-gray-600 ml-2">Generate audio</div>
-                    </div>
-                    {availableVoices.map((voice) => (
-                      <div 
-                        key={voice.id}
-                        className="p-2 hover:bg-gray-100 rounded cursor-pointer"
-                        onClick={() => selectVoiceAndGenerate(voice.id)}
-                      >
-                        {voice.name}
+                    </button>
+                    
+                    {showAudioMenu && (
+                      <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-20 w-[200px]">
+                        <div 
+                          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-medium"
+                          onClick={handleRequestAudio}
+                        >
+                          Request audio
+                        </div>
+                        <div 
+                          className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-medium"
+                          onClick={() => setShowVoiceSelector(true)}
+                        >
+                          Generate audio
+                        </div>
                       </div>
-                    ))}
+                    )}
+                    
+                    {showVoiceSelector && (
+                      <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-20 w-[280px]">
+                        <div className="flex items-center mb-2 border-b pb-1">
+                          <div 
+                            className="cursor-pointer text-gray-500 hover:text-gray-700 flex items-center"
+                            onClick={() => setShowVoiceSelector(false)}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/>
+                            </svg>
+                          </div>
+                          <div className="font-medium text-gray-600 ml-2">Generate audio</div>
+                        </div>
+                        
+                        {/* Поисковая строка с кнопкой разворачивания тегов */}
+                        <div className="mb-2 relative">
+                          <div className="flex items-center">
+                            <input
+                              type="text"
+                              placeholder="Search voices..."
+                              value={voiceSearchQuery}
+                              onChange={handleVoiceSearchChange}
+                              className="flex-1 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => setIsTagsExpanded(!isTagsExpanded)}
+                              className="ml-4 mr-2 text-xs text-gray-600 hover:text-gray-800 whitespace-nowrap w-[60px] text-center"
+                            >
+                              {isTagsExpanded ? 'Hide tags' : 'Show tags'}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Теги для фильтрации */}
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                          isTagsExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                        }`}>
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {getUniqueTags().map(tag => (
+                              <button
+                                key={tag}
+                                onClick={() => handleTagSelect(tag)}
+                                className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                                  selectedTags.includes(tag)
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                              >
+                                {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          {/* Разделитель */}
+                          <div className="w-full h-[1px] bg-gray-200 my-2"></div>
+                        </div>
+                        
+                        {/* Индикатор активных фильтров */}
+                        {selectedTags.length > 0 && !isTagsExpanded && (
+                          <div className="flex items-center gap-1 mb-2">
+                            <div className="flex flex-wrap gap-1">
+                              {selectedTags.map(tag => (
+                                <div key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                  {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTagSelect(tag);
+                                    }}
+                                    className="ml-1 hover:text-blue-900"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Список голосов со скроллом */}
+                        <div className="max-h-[240px] overflow-y-auto">
+                          {isLoadingVoices ? (
+                            <div className="p-4 text-center text-gray-500">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                              Loading voices...
+                            </div>
+                          ) : voiceLoadError ? (
+                            <div className="p-4 text-center text-red-500">
+                              Error: {voiceLoadError}
+                              <button 
+                                onClick={fetchVoices}
+                                className="mt-2 px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                              >
+                                Retry
+                              </button>
+                            </div>
+                          ) : filteredVoices.length > 0 ? (
+                            filteredVoices.map((voice) => (
+                              <div 
+                                key={voice.id}
+                                className="p-2 hover:bg-gray-100 rounded cursor-pointer flex flex-col"
+                                onClick={() => selectVoiceAndGenerate(voice.id)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span>{voice.name}</span>
+                                  {voice.isPremium && (
+                                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-yellow-100 text-yellow-800 rounded">
+                                      PRO
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {voice.accent.charAt(0).toUpperCase() + voice.accent.slice(1)}, 
+                                  {' ' + voice.gender.charAt(0).toUpperCase() + voice.gender.slice(1)}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-2 text-center text-gray-500">No matching voices found</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {isGeneratingAudio && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-75 rounded-3xl">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#116EEE]"></div>
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                {isGeneratingAudio && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-75 rounded-3xl">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#116EEE]"></div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="w-full font-normal mt-4">
             <div className="w-full max-md:max-w-full">

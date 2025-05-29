@@ -1,6 +1,36 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 const Sidebar: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const menuItems = [
+    'Personal Information',
+    'Admin Settings',
+    'Course Stats',
+    'Progress Matching',
+    'Audio Management',
+    'Logout'
+  ];
+
   return (
     <div
       className="bg-[rgba(243,248,254,1)] relative flex w-full flex-col mx-auto pt-6 pb-[412px] px-6 max-md:pb-[100px] max-md:px-5"
@@ -491,13 +521,32 @@ const Sidebar: React.FC = () => {
         className="bg-[rgba(243,248,254,1)] shadow-[0px_-1px_0px_rgba(214,222,230,1)] absolute z-0 w-[292px] max-w-[292px] text-xs text-white font-normal whitespace-nowrap px-6 py-4 right-0 bottom-0 max-md:px-5"
       >
         <div className="flex items-center gap-6">
-          <div className="self-stretch w-8 my-auto">
+          <div className="self-stretch w-8 my-auto relative" ref={menuRef}>
             <div
-              className="stroke-[1px] border bg-[#0E58BE] w-8 h-8 fill-[#0E58BE] px-[3px] rounded-[50%] border-[rgba(0,0,0,0.1)] border-solid"
+              className="stroke-[1px] border bg-[#0E58BE] w-8 h-8 fill-[#0E58BE] px-[3px] rounded-[50%] border-[rgba(0,0,0,0.1)] border-solid flex items-center justify-center text-white cursor-pointer hover:bg-[#0D4FA3] transition-colors"
               aria-label="User profile"
+              onClick={toggleMenu}
             >
               TL
             </div>
+            
+            {/* Context Menu */}
+            {isMenuOpen && (
+              <div className="absolute bottom-full left-0 mb-2 bg-white shadow-lg rounded-lg p-2 z-50 w-[200px]">
+                {menuItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-normal"
+                    onClick={() => {
+                      console.log(`Clicked: ${item}`);
+                      setIsMenuOpen(false);
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <img
             src="https://cdn.builder.io/api/v1/image/assets/a61b8aff1f9a4d4b8c540558ab06b276/0d44dbe8a3c22303f567ac4e0619298fdcfec9af?placeholderIfAbsent=true"
