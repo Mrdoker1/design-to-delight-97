@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -20,6 +22,14 @@ const Sidebar: React.FC = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleMenuItemClick = (item: string) => {
+    console.log(`Clicked: ${item}`);
+    if (item === 'Audio Management') {
+      navigate('/ai-voices');
+    }
+    setIsMenuOpen(false);
   };
 
   const menuItems = [
@@ -536,12 +546,16 @@ const Sidebar: React.FC = () => {
                 {menuItems.map((item, index) => (
                   <div
                     key={index}
-                    className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-normal"
-                    onClick={() => {
-                      console.log(`Clicked: ${item}`);
-                      setIsMenuOpen(false);
-                    }}
+                    className={`p-2 hover:bg-gray-100 rounded cursor-pointer font-normal ${
+                      item === 'Audio Management' 
+                        ? 'text-blue-600 hover:bg-blue-50' 
+                        : 'text-gray-600'
+                    }`}
+                    onClick={() => handleMenuItemClick(item)}
                   >
+                    {item === 'Audio Management' && (
+                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    )}
                     {item}
                   </div>
                 ))}

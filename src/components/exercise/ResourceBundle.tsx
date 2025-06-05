@@ -76,6 +76,8 @@ const ResourceBundle: React.FC = () => {
   const audioMenuRef = useRef<HTMLDivElement>(null);
   const volumeInputRef = useRef<HTMLInputElement>(null);
   const progressInputRef = useRef<HTMLInputElement>(null);
+  const [expandedVoices, setExpandedVoices] = useState<Set<string>>(new Set());
+  const [currentPlayingPreview, setCurrentPlayingPreview] = useState<HTMLAudioElement | null>(null);
 
   // Функция для получения списка голосов от ElevenLabs API
   const fetchVoices = async () => {
@@ -400,16 +402,28 @@ const ResourceBundle: React.FC = () => {
   // Обновляем функцию фильтрации голосов
   const filteredVoices = availableVoices.filter(voice => {
     const matchesSearch = voiceSearchQuery === '' || 
-      voice.name.toLowerCase().includes(voiceSearchQuery.toLowerCase());
+      voice.name.toLowerCase().includes(voiceSearchQuery.toLowerCase()) ||
+      voice.accent.toLowerCase().includes(voiceSearchQuery.toLowerCase()) ||
+      voice.gender.toLowerCase().includes(voiceSearchQuery.toLowerCase()) ||
+      (voice.description && voice.description.toLowerCase().includes(voiceSearchQuery.toLowerCase())) ||
+      (voice.labels && Object.values(voice.labels).some(label => 
+        label && label.toLowerCase().includes(voiceSearchQuery.toLowerCase())
+      ));
     
     const matchesTags = selectedTags.length === 0 || 
-      selectedTags.every(tag => 
-        tag === 'all' ||
-        voice.accent === tag || 
-        voice.gender === tag || 
-        (tag === 'premium' && voice.isPremium) ||
-        (voice.labels && Object.values(voice.labels).some(label => label === tag))
-      );
+      selectedTags.every(tag => {
+        if (tag === 'all') return true;
+        
+        // Ищем тег во всех полях голоса (как в поисковой строке)
+        return voice.name.toLowerCase().includes(tag.toLowerCase()) ||
+               voice.accent.toLowerCase().includes(tag.toLowerCase()) ||
+               voice.gender.toLowerCase().includes(tag.toLowerCase()) ||
+               (voice.description && voice.description.toLowerCase().includes(tag.toLowerCase())) ||
+               (tag === 'premium' && voice.isPremium) ||
+               (voice.labels && Object.values(voice.labels).some(label => 
+                 label && label.toLowerCase().includes(tag.toLowerCase())
+               ));
+      });
     
     return matchesSearch && matchesTags;
   });
@@ -451,6 +465,16 @@ const ResourceBundle: React.FC = () => {
 
   const handleVoiceSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setVoiceSearchQuery(e.target.value);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && voiceSearchQuery.trim()) {
+      const searchTerm = voiceSearchQuery.trim().toLowerCase();
+      if (!selectedTags.includes(searchTerm)) {
+        setSelectedTags(prev => [...prev, searchTerm]);
+      }
+      setVoiceSearchQuery('');
+    }
   };
 
   return (
@@ -709,20 +733,20 @@ const ResourceBundle: React.FC = () => {
                           className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-medium"
                           onClick={handleRequestAudio}
                         >
-                          Request audio
+                          Voice Artist
                         </div>
                         <div 
                           className="p-2 hover:bg-gray-100 rounded cursor-pointer text-gray-600 font-medium"
                           onClick={() => setShowVoiceSelector(true)}
                         >
-                          Generate audio
+                          AI Voices
                         </div>
                       </div>
                     )}
                     
                     {showVoiceSelector && (
-                      <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-20 w-[280px]">
-                        <div className="flex items-center mb-2 border-b pb-1">
+                      <div className="absolute right-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-20 w-[280px] max-h-[320px] flex flex-col">
+                        <div className="flex items-center mb-2 border-b pb-1 flex-shrink-0">
                           <div 
                             className="cursor-pointer text-gray-500 hover:text-gray-700 flex items-center"
                             onClick={() => setShowVoiceSelector(false)}
@@ -731,17 +755,18 @@ const ResourceBundle: React.FC = () => {
                               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/>
                             </svg>
                           </div>
-                          <div className="font-medium text-gray-600 ml-2">Generate audio</div>
+                          <div className="font-medium text-gray-600 ml-2">AI Voices</div>
                         </div>
                         
                         {/* Поисковая строка с кнопкой разворачивания тегов */}
-                        <div className="mb-2 relative">
+                        <div className="mb-2 relative flex-shrink-0">
                           <div className="flex items-center">
                             <input
                               type="text"
-                              placeholder="Search voices..."
+                              placeholder="Search by tag or ID"
                               value={voiceSearchQuery}
                               onChange={handleVoiceSearchChange}
+                              onKeyDown={handleSearchKeyDown}
                               className="flex-1 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
                             <button
@@ -753,33 +778,9 @@ const ResourceBundle: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Теги для фильтрации */}
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                          isTagsExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-                        }`}>
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {getUniqueTags().map(tag => (
-                              <button
-                                key={tag}
-                                onClick={() => handleTagSelect(tag)}
-                                className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                                  selectedTags.includes(tag)
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                              >
-                                {tag.charAt(0).toUpperCase() + tag.slice(1)}
-                              </button>
-                            ))}
-                          </div>
-                          
-                          {/* Разделитель */}
-                          <div className="w-full h-[1px] bg-gray-200 my-2"></div>
-                        </div>
-                        
                         {/* Индикатор активных фильтров */}
                         {selectedTags.length > 0 && !isTagsExpanded && (
-                          <div className="flex items-center gap-1 mb-2">
+                          <div className="flex items-center gap-1 mb-2 flex-shrink-0">
                             <div className="flex flex-wrap gap-1">
                               {selectedTags.map(tag => (
                                 <div key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
@@ -799,48 +800,194 @@ const ResourceBundle: React.FC = () => {
                           </div>
                         )}
                         
-                        {/* Список голосов со скроллом */}
-                        <div className="max-h-[240px] overflow-y-auto">
-                          {isLoadingVoices ? (
-                            <div className="p-4 text-center text-gray-500">
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                              Loading voices...
+                        {isTagsExpanded ? (
+                          /* Страница тегов - заменяет список голосов */
+                          <div className="max-h-[220px] overflow-y-auto flex-1">
+                            <div className="flex flex-wrap gap-1 p-1">
+                              {getUniqueTags().map(tag => (
+                                <button
+                                  key={tag}
+                                  onClick={() => handleTagSelect(tag)}
+                                  className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                                    selectedTags.includes(tag)
+                                      ? 'bg-blue-500 text-white'
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                                </button>
+                              ))}
                             </div>
-                          ) : voiceLoadError ? (
-                            <div className="p-4 text-center text-red-500">
-                              Error: {voiceLoadError}
-                              <button 
-                                onClick={fetchVoices}
-                                className="mt-2 px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
-                              >
-                                Retry
-                              </button>
-                            </div>
-                          ) : filteredVoices.length > 0 ? (
-                            filteredVoices.map((voice) => (
-                              <div 
-                                key={voice.id}
-                                className="p-2 hover:bg-gray-100 rounded cursor-pointer flex flex-col"
-                                onClick={() => selectVoiceAndGenerate(voice.id)}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span>{voice.name}</span>
-                                  {voice.isPremium && (
-                                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-yellow-100 text-yellow-800 rounded">
-                                      PRO
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {voice.accent.charAt(0).toUpperCase() + voice.accent.slice(1)}, 
-                                  {' ' + voice.gender.charAt(0).toUpperCase() + voice.gender.slice(1)}
-                                </div>
+                          </div>
+                        ) : (
+                          /* Список голосов со скроллом */
+                          <div className="max-h-[220px] overflow-y-auto flex-1">
+                            {isLoadingVoices ? (
+                              <div className="p-4 text-center text-gray-500">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                                Loading voices...
                               </div>
-                            ))
-                          ) : (
-                            <div className="p-2 text-center text-gray-500">No matching voices found</div>
-                          )}
-                        </div>
+                            ) : voiceLoadError ? (
+                              <div className="p-4 text-center text-red-500">
+                                Error: {voiceLoadError}
+                                <button 
+                                  onClick={fetchVoices}
+                                  className="mt-2 px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                                >
+                                  Retry
+                                </button>
+                              </div>
+                            ) : filteredVoices.length > 0 ? (
+                              filteredVoices.map((voice) => {
+                                const hasDescription = voice.description;
+                                const availableTags = Object.entries(voice.labels || {})
+                                  .filter(([key, value]) => 
+                                    value && 
+                                    !['accent', 'gender'].includes(key) && 
+                                    value !== voice.accent &&
+                                    value !== voice.gender
+                                  );
+                                const hasTags = availableTags.length > 0;
+                                const hasAdditionalInfo = hasDescription || hasTags;
+
+                                const toggleExpanded = () => {
+                                  setExpandedVoices(prev => {
+                                    const newSet = new Set(prev);
+                                    if (newSet.has(voice.id)) {
+                                      newSet.delete(voice.id);
+                                    } else {
+                                      newSet.add(voice.id);
+                                    }
+                                    return newSet;
+                                  });
+                                };
+
+                                const isExpanded = expandedVoices.has(voice.id);
+
+                                return (
+                                  <div 
+                                    key={voice.id}
+                                    className="p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                                    onClick={() => {
+                                      if (!hasAdditionalInfo) {
+                                        // Если нет дополнительной информации, сразу выбираем голос
+                                        selectVoiceAndGenerate(voice.id);
+                                      } else {
+                                        // Если есть доп. информация - переключаем развернутое состояние
+                                        toggleExpanded();
+                                      }
+                                    }}
+                                  >
+                                    {/* Первая строка: Имя, акцент, пол и премиум статус */}
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <span className="font-medium text-gray-800 truncate">
+                                          {isExpanded 
+                                            ? `${voice.name} (${voice.accent.charAt(0).toUpperCase() + voice.accent.slice(1)}, ${voice.gender.charAt(0).toUpperCase() + voice.gender.slice(1)})`
+                                            : `${voice.name} (${voice.accent.charAt(0).toUpperCase() + voice.accent.slice(1)}, ${voice.gender.charAt(0).toUpperCase() + voice.gender.slice(1)})`
+                                          }
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2 flex-shrink-0">
+                                        {voice.isPremium && (
+                                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700 rounded-full border border-orange-200">
+                                            PRO
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Расширенная информация */}
+                                    {hasAdditionalInfo && (
+                                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                                        isExpanded ? 'max-h-[200px] opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                      }`}>
+                                        {/* Description */}
+                                        {hasDescription && (
+                                          <div className="text-xs text-gray-600 mb-3" style={{
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                            lineHeight: '1.3'
+                                          }}>
+                                            {voice.description}
+                                          </div>
+                                        )}
+
+                                        {/* Теги */}
+                                        {hasTags && (
+                                          <div className="flex flex-wrap gap-1 mb-3">
+                                            {availableTags
+                                              .slice(0, 4) // Показываем максимум 4 тега
+                                              .map(([key, value]) => (
+                                                <span
+                                                  key={key}
+                                                  className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600"
+                                                >
+                                                  {value}
+                                                </span>
+                                              ))}
+                                            {availableTags.length > 4 && (
+                                              <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                                                +{availableTags.length - 4}
+                                              </span>
+                                            )}
+                                          </div>
+                                        )}
+
+                                        {/* Кнопка выбора голоса */}
+                                        <div className="flex justify-end gap-2">
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              
+                                              // Если уже что-то воспроизводится, останавливаем
+                                              if (currentPlayingPreview) {
+                                                currentPlayingPreview.pause();
+                                                currentPlayingPreview.currentTime = 0;
+                                                setCurrentPlayingPreview(null);
+                                                return;
+                                              }
+                                              
+                                              if (voice.preview_url) {
+                                                const audio = new Audio(voice.preview_url);
+                                                setCurrentPlayingPreview(audio);
+                                                
+                                                audio.addEventListener('ended', () => {
+                                                  setCurrentPlayingPreview(null);
+                                                });
+                                                
+                                                audio.play().catch(error => {
+                                                  console.error("Error playing preview:", error);
+                                                  setCurrentPlayingPreview(null);
+                                                });
+                                              }
+                                            }}
+                                            className="px-3 py-1.5 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 text-xs font-medium rounded-full transition-colors"
+                                          >
+                                            Voice test
+                                          </button>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              selectVoiceAndGenerate(voice.id);
+                                            }}
+                                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-full transition-colors"
+                                          >
+                                            Use this voice
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="p-2 text-center text-gray-500">No matching voices found</div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                     
