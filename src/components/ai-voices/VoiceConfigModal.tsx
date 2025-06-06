@@ -20,6 +20,7 @@ interface VoiceConfigModalProps {
 
 interface VoiceConfig {
   voiceId: string;
+  name: string;
   description: string;
   tags: string;
   language: string;
@@ -35,11 +36,12 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
   ({ isOpen, onClose, className, ...props }, ref) => {
       const [config, setConfig] = React.useState<VoiceConfig>({
     voiceId: "",
-    description: "Perfect for news content",
-    tags: "clear, calm, dialogue, warm, english, british, female",
-    language: "English",
-    gender: "Female",
-    accent: "British",
+    name: "",
+    description: "",
+    tags: "",
+    language: "",
+    gender: "",
+    accent: "",
     speed: 40,
     stability: 40,
     similarity: 40,
@@ -48,6 +50,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
 
   // Audio player state
   const [audioSrc, setAudioSrc] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
     const handleInputChange = (field: keyof VoiceConfig, value: string | number) => {
       setConfig(prev => ({ ...prev, [field]: value }));
@@ -68,13 +71,65 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
       onClose();
     };
 
-    const handleApplyVoiceId = () => {
-      console.log("Applying voice ID:", config.voiceId);
-      // Для демонстрации загружаем тестовое аудио
-      if (config.voiceId.trim()) {
-        // Здесь должна быть логика генерации аудио с ElevenLabs API
-        // Пока что загружаем тестовое аудио
-        setAudioSrc("https://www.soundjay.com/misc/sounds/bell-ringing-05.wav");
+    const handleApplyVoiceId = async () => {
+      if (!config.voiceId.trim()) {
+        alert("Please enter a Voice ID");
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+        if (!apiKey) {
+          throw new Error("ElevenLabs API key not found");
+        }
+
+        // Получаем информацию о голосе
+        const response = await fetch(`https://api.elevenlabs.io/v1/voices/${config.voiceId}`, {
+          headers: {
+            'Accept': 'application/json',
+            'xi-api-key': apiKey
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch voice: ${response.status} ${response.statusText}`);
+        }
+
+        const voiceData = await response.json();
+        
+        // Обновляем конфигурацию с полученными данными
+        setConfig(prev => ({
+          ...prev,
+          name: voiceData.name || "",
+          description: voiceData.description || "",
+          tags: Object.entries(voiceData.labels || {})
+            .filter(([_, value]) => value)
+            .map(([_, value]) => value)
+            .join(", "),
+          language: voiceData.labels?.accent?.includes('english') ? 'English' : 
+                   voiceData.labels?.accent?.includes('spanish') ? 'Spanish' :
+                   voiceData.labels?.accent?.includes('french') ? 'French' :
+                   voiceData.labels?.accent?.includes('german') ? 'German' : "",
+          gender: voiceData.labels?.gender ? 
+                  voiceData.labels.gender.charAt(0).toUpperCase() + voiceData.labels.gender.slice(1) : "",
+          accent: voiceData.labels?.accent?.includes('british') ? 'British' :
+                  voiceData.labels?.accent?.includes('american') ? 'American' :
+                  voiceData.labels?.accent?.includes('australian') ? 'Australian' :
+                  voiceData.labels?.accent?.includes('canadian') ? 'Canadian' : ""
+        }));
+
+        // Устанавливаем preview аудио если доступно
+        if (voiceData.preview_url) {
+          setAudioSrc(voiceData.preview_url);
+        }
+
+        console.log("Voice data loaded:", voiceData);
+      } catch (error) {
+        console.error("Error loading voice data:", error);
+        alert(`Failed to load voice data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -99,7 +154,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         <div className="flex w-[618px] h-full flex-col items-center gap-0 shrink-0 shadow-[0px_8px_12px_0px_rgba(0,0,0,0.10)] relative bg-white max-md:w-[90vw] max-md:max-w-[618px] max-sm:w-[95vw] max-sm:m-5">
           {/* Header */}
           <div className="flex-shrink-0 overflow-hidden text-[#252B2F] text-ellipsis text-3xl font-bold leading-[39px] relative h-20 gap-2.5 self-stretch px-10 py-0 max-md:px-6 max-md:py-0 max-sm:text-2xl max-sm:h-[60px] max-sm:px-4 max-sm:py-0 flex items-center">
-            Emma
+            Add new AI voice
           </div>
 
           {/* Scrollable Content */}
@@ -121,10 +176,14 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                     <Button
                       onClick={handleApplyVoiceId}
                       variant="outline"
-                      className="flex justify-center items-center h-7 px-6 rounded-3xl border-2 border-solid border-[#116EEE] text-[#116EEE] text-center text-sm font-bold leading-[21px] hover:bg-[#116EEE] hover:text-white"
+                      disabled={isLoading || !config.voiceId.trim()}
+                      className="flex justify-center items-center h-7 px-6 rounded-3xl border-2 border-solid border-[#116EEE] text-[#116EEE] text-center text-sm font-bold leading-[21px] hover:bg-[#116EEE] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Apply
+                      {isLoading ? "Loading..." : "Apply"}
                     </Button>
+                  </div>
+                  <div className="text-[#9CAEC7] text-xs leading-[18px] mt-1">
+                    Copy the voice ID from your ElevenLabs account and click Apply to load voice data
                   </div>
                 </FormField>
               </FormSection>
@@ -155,8 +214,22 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                   />
                 </FormField>
 
-                {/* Language and Gender Row */}
+                {/* Name and Language Row */}
                 <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
+                  <FormField label="Name" className="flex-1">
+                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                      <input
+                        type="text"
+                        value={config.name}
+                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        placeholder="Voice name"
+                        className={`flex-1 text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                          config.name ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                        } placeholder:text-[#9CAEC7]`}
+                      />
+                    </div>
+                  </FormField>
+
                   <FormField label="Language" className="flex-1">
                     <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
                       <select
@@ -174,27 +247,10 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       </select>
                     </div>
                   </FormField>
-
-                  <FormField label="Gender" className="flex-1">
-                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
-                      <select
-                        value={config.gender}
-                        onChange={(e) => handleInputChange("gender", e.target.value)}
-                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
-                          config.gender ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
-                        }`}
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="Female">Female</option>
-                        <option value="Male">Male</option>
-                        <option value="Non-binary">Non-binary</option>
-                      </select>
-                    </div>
-                  </FormField>
                 </div>
 
-                {/* Accent Row */}
-                <div className="flex h-[66px] items-start gap-5 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
+                {/* Accent and Gender Row */}
+                <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
                   <FormField label="Accent" className="flex-1">
                     <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
                       <select
@@ -209,6 +265,23 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                         <option value="American">American</option>
                         <option value="Australian">Australian</option>
                         <option value="Canadian">Canadian</option>
+                      </select>
+                    </div>
+                  </FormField>
+
+                  <FormField label="Gender" className="flex-1">
+                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                      <select
+                        value={config.gender}
+                        onChange={(e) => handleInputChange("gender", e.target.value)}
+                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                          config.gender ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                        }`}
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Non-binary">Non-binary</option>
                       </select>
                     </div>
                   </FormField>
@@ -302,7 +375,8 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
               </Button>
               <Button
                 onClick={handleSave}
-                className="flex h-12 justify-center items-center gap-2.5 relative bg-[#116EEE] px-6 py-3 rounded-[32px] max-sm:w-full hover:bg-[#0F5FD9]"
+                disabled={!config.description || !config.gender || !config.accent || isLoading}
+                className="flex h-12 justify-center items-center gap-2.5 relative bg-[#116EEE] px-6 py-3 rounded-[32px] max-sm:w-full hover:bg-[#0F5FD9] disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <span className="text-white text-base font-bold leading-6">
                   Save
