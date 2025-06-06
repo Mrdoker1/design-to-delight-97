@@ -8,7 +8,7 @@ import { FormSection, FormField } from '../ui/form-section';
 import { SliderInput } from '../ui/slider-input';
 import { AdvancedAudioPlayer } from '../ui/advanced-audio-player';
 import { Textarea } from '../ui/textarea';
-import { Voice } from '../../types/voice';
+import { Voice, VoiceDNA } from '../../types/voice';
 
 interface VoiceConfigModalProps {
   isOpen: boolean;
@@ -61,19 +61,26 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
     // Заполняем форму при редактировании
     React.useEffect(() => {
       if (isEditMode && editingVoice) {
+        // Определяем ElevenLabs ID: сначала elevenLabsId, потом id (для обратной совместимости)
+        const elevenLabsId = editingVoice.elevenLabsId || editingVoice.id;
+        
+        console.log("Режим редактирования голоса:", editingVoice.name, "ID:", editingVoice.id, "ElevenLabs ID:", elevenLabsId);
         setConfig({
-          voiceId: editingVoice.id,
+          voiceId: elevenLabsId,
           name: editingVoice.name,
           description: editingVoice.description || '',
           tags: editingVoice.tags.join(', '),
           language: editingVoice.language,
           gender: editingVoice.gender,
           accent: editingVoice.accent,
-          speed: 40, // Из Voice DNA можно парсить
-          stability: 40,
-          similarity: 40,
-          styleExaggeration: 40,
+          speed: editingVoice.voiceDNA.speed,
+          stability: editingVoice.voiceDNA.stability,
+          similarity: editingVoice.voiceDNA.similarity,
+          styleExaggeration: editingVoice.voiceDNA.styleExaggeration,
         });
+        // Автоматически загружаем voice preview при редактировании
+        console.log("Загружаем voice preview для ElevenLabs ID:", elevenLabsId);
+        loadVoicePreview(elevenLabsId);
       } else {
         // Сбрасываем форму при добавлении нового голоса
         setConfig({
@@ -92,6 +99,63 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         setAudioSrc(null);
       }
     }, [isEditMode, editingVoice, isOpen]);
+
+    // Отслеживаем изменения audioSrc
+    React.useEffect(() => {
+      console.log("audioSrc изменился:", audioSrc);
+    }, [audioSrc]);
+
+    // Функция для загрузки voice preview
+    const loadVoicePreview = async (voiceId: string) => {
+      console.log("=== НАЧАЛО loadVoicePreview ===");
+      console.log("voiceId:", voiceId);
+      
+      if (!voiceId.trim()) {
+        console.log("voiceId пустой, выходим");
+        return;
+      }
+
+      try {
+        const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+        console.log("API ключ найден:", !!apiKey);
+        
+        if (!apiKey) {
+          console.warn("ElevenLabs API key not found for voice preview");
+          return;
+        }
+
+        console.log("Делаем запрос к ElevenLabs API для ID:", voiceId);
+
+        // Получаем информацию о голосе для preview
+        const response = await fetch(`https://api.elevenlabs.io/v1/voices/${voiceId}`, {
+          headers: {
+            'Accept': 'application/json',
+            'xi-api-key': apiKey
+          }
+        });
+
+        console.log("Ответ от API:", response.status, response.statusText);
+
+        if (response.ok) {
+          const voiceData = await response.json();
+          console.log("Voice data получен:", voiceData);
+          
+          // Устанавливаем preview аудио если доступно
+          if (voiceData.preview_url) {
+            console.log("Устанавливаем реальный preview от ElevenLabs:", voiceData.preview_url);
+            setAudioSrc(voiceData.preview_url);
+          } else {
+            console.log("Preview URL не найден в данных голоса");
+          }
+        } else {
+          console.warn("Ошибка при загрузке данных голоса:", response.status, response.statusText);
+        }
+      } catch (error) {
+        console.warn("Error loading voice preview:", error);
+      }
+      
+      console.log("=== КОНЕЦ loadVoicePreview ===");
+    };
 
     const handleInputChange = (field: keyof VoiceConfig, value: string | number) => {
       setConfig(prev => ({ ...prev, [field]: value }));
@@ -126,19 +190,34 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         language: config.language,
         languageCode: getLanguageCode(config.language),
         accent: config.accent,
-        voiceDNA: `Sp ${config.speed} / St ${config.stability} / Si ${config.similarity} / Ex ${config.styleExaggeration}`,
+        voiceDNA: {
+          speed: config.speed,
+          stability: config.stability,
+          similarity: config.similarity,
+          styleExaggeration: config.styleExaggeration
+        },
         tags: config.tags.split(',').map(tag => tag.trim()).filter(Boolean),
         flagIcon: '',
         description: config.description,
       };
 
-      if (isEditMode && editingVoice) {
-        // Режим редактирования - сохраняем ID
-        onSave({ ...voiceData, id: editingVoice.id });
-      } else {
-        // Режим добавления - без ID
-        onSave(voiceData);
-      }
+      // В режиме редактирования используем текущий ID из editingVoice
+      // В режиме добавления используем voiceId или генерируем новый ID
+      const finalId = isEditMode && editingVoice ? editingVoice.id : (config.voiceId || Date.now().toString());
+      
+      console.log('Сохраняем голос с ID:', finalId, 'режим:', isEditMode ? 'редактирование' : 'добавление');
+      console.log('config.voiceId:', config.voiceId);
+      console.log('editingVoice?.id:', editingVoice?.id);
+      
+      // Создаем объект голоса с правильным ID и обновляем voiceId в нем для ElevenLabs API
+      const savedVoice = { 
+        ...voiceData, 
+        id: finalId,
+        // Дополнительно сохраняем ElevenLabs ID для будущих API вызовов
+        elevenLabsId: config.voiceId 
+      };
+      
+      onSave(savedVoice);
     };
 
     // Проверяем заполнены ли все обязательные поля

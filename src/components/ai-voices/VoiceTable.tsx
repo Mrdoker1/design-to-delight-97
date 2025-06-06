@@ -1,5 +1,6 @@
 import React from 'react';
 import { Voice } from '../../types/voice';
+import { formatVoiceDNA } from '../../utils/voiceDNA';
 
 interface VoiceTableProps {
   voices: Voice[];
@@ -68,7 +69,7 @@ export const VoiceTable: React.FC<VoiceTableProps> = ({ voices, onEdit, onDelete
               </td>
               <td className="flex-[1_0_0] max-sm:w-full max-sm:mb-2">
                 <span className="text-[#1E2D40] text-[13px] font-medium leading-[19.5px] lowercase gap-1 rounded bg-[#F3F5F8] px-2 py-0.5 inline-block">
-                  {voice.voiceDNA}
+                  {formatVoiceDNA(voice.voiceDNA)}
                 </span>
               </td>
               <td className="flex w-80 items-start gap-1 shrink-0 pl-10 max-md:w-[200px] max-md:pl-5 max-sm:w-full max-sm:flex-wrap">
