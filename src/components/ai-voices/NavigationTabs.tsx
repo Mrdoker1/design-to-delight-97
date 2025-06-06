@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { VoiceConfigModal } from './VoiceConfigModal';
+import { Voice } from '../../types/voice';
 
 interface Tab {
   id: string;
@@ -7,9 +8,22 @@ interface Tab {
   active?: boolean;
 }
 
-export const NavigationTabs: React.FC = () => {
+interface NavigationTabsProps {
+  onAddVoice: (voiceData: Omit<Voice, 'id'>) => void;
+  onEditVoice: (updatedVoice: Voice) => void;
+  editingVoice: Voice | null;
+  onEditingVoiceChange: (voice: Voice | null) => void;
+}
+
+export const NavigationTabs: React.FC<NavigationTabsProps> = ({ 
+  onAddVoice, 
+  onEditVoice, 
+  editingVoice, 
+  onEditingVoiceChange 
+}) => {
   const [activeTab, setActiveTab] = useState('ai-voices');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentEditingVoice, setCurrentEditingVoice] = useState<Voice | null>(null);
 
   const tabs: Tab[] = [
     { id: 'audio-requests', label: 'Audio Requests' },
@@ -17,12 +31,34 @@ export const NavigationTabs: React.FC = () => {
     { id: 'ai-voices', label: 'AI Voices', active: true },
   ];
 
+  // Открываем модал когда получаем голос для редактирования
+  useEffect(() => {
+    if (editingVoice) {
+      setCurrentEditingVoice(editingVoice);
+      setIsModalOpen(true);
+    }
+  }, [editingVoice]);
+
   const handleAddNewVoice = () => {
+    setCurrentEditingVoice(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setCurrentEditingVoice(null);
+    onEditingVoiceChange(null); // Сбрасываем editingVoice в родительском компоненте
+  };
+
+  const handleSaveVoice = (voiceData: Omit<Voice, 'id'> | Voice) => {
+    if (currentEditingVoice) {
+      // Режим редактирования
+      onEditVoice(voiceData as Voice);
+    } else {
+      // Режим добавления
+      onAddVoice(voiceData as Omit<Voice, 'id'>);
+    }
+    handleCloseModal();
   };
 
   return (
@@ -55,7 +91,9 @@ export const NavigationTabs: React.FC = () => {
       
       <VoiceConfigModal 
         isOpen={isModalOpen} 
-        onClose={handleCloseModal} 
+        onClose={handleCloseModal}
+        onSave={handleSaveVoice}
+        editingVoice={currentEditingVoice}
       />
     </>
   );

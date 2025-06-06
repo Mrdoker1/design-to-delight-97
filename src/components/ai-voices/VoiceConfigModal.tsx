@@ -1,20 +1,20 @@
 "use client";
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-
-
-import { SliderInput } from "@/components/ui/slider-input";
-import { FormSection, FormField } from "@/components/ui/form-section";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AdvancedAudioPlayer } from "@/components/ui/advanced-audio-player";
+import React from 'react';
+import { Button } from '../ui/button';
+import { ScrollArea } from '../ui/scroll-area';
+import { cn } from '../../lib/utils';
+import { FormSection, FormField } from '../ui/form-section';
+import { SliderInput } from '../ui/slider-input';
+import { AdvancedAudioPlayer } from '../ui/advanced-audio-player';
+import { Textarea } from '../ui/textarea';
+import { Voice } from '../../types/voice';
 
 interface VoiceConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave: (voiceData: Omit<Voice, 'id'> | Voice) => void;
+  editingVoice?: Voice | null;
   className?: string;
 }
 
@@ -33,24 +33,65 @@ interface VoiceConfig {
 }
 
 export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModalProps>(
-  ({ isOpen, onClose, className, ...props }, ref) => {
-      const [config, setConfig] = React.useState<VoiceConfig>({
-    voiceId: "",
-    name: "",
-    description: "",
-    tags: "",
-    language: "",
-    gender: "",
-    accent: "",
-    speed: 40,
-    stability: 40,
-    similarity: 40,
-    styleExaggeration: 40,
-  });
+  ({ isOpen, onClose, onSave, editingVoice, className, ...props }, ref) => {
+    const isEditMode = !!editingVoice;
+    
+    const [config, setConfig] = React.useState<VoiceConfig>({
+      voiceId: "",
+      name: "",
+      description: "",
+      tags: "",
+      language: "",
+      gender: "",
+      accent: "",
+      speed: 40,
+      stability: 40,
+      similarity: 40,
+      styleExaggeration: 40,
+    });
 
-  // Audio player state
-  const [audioSrc, setAudioSrc] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+    // Audio player state
+    const [audioSrc, setAudioSrc] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [statusMessage, setStatusMessage] = React.useState<{
+      type: 'success' | 'error' | 'info' | null;
+      text: string;
+    }>({ type: null, text: '' });
+
+    // Заполняем форму при редактировании
+    React.useEffect(() => {
+      if (isEditMode && editingVoice) {
+        setConfig({
+          voiceId: editingVoice.id,
+          name: editingVoice.name,
+          description: '', // Возможно нужно добавить в тип Voice
+          tags: editingVoice.tags.join(', '),
+          language: editingVoice.language,
+          gender: editingVoice.gender,
+          accent: editingVoice.accent,
+          speed: 40, // Из Voice DNA можно парсить
+          stability: 40,
+          similarity: 40,
+          styleExaggeration: 40,
+        });
+      } else {
+        // Сбрасываем форму при добавлении нового голоса
+        setConfig({
+          voiceId: "",
+          name: "",
+          description: "",
+          tags: "",
+          language: "",
+          gender: "",
+          accent: "",
+          speed: 40,
+          stability: 40,
+          similarity: 40,
+          styleExaggeration: 40,
+        });
+        setAudioSrc(null);
+      }
+    }, [isEditMode, editingVoice, isOpen]);
 
     const handleInputChange = (field: keyof VoiceConfig, value: string | number) => {
       setConfig(prev => ({ ...prev, [field]: value }));
@@ -67,9 +108,71 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
     };
 
     const handleSave = () => {
-      console.log("Saving voice configuration:", config);
-      onClose();
+      // Генерируем languageCode на основе language
+      const getLanguageCode = (language: string): string => {
+        const codes: Record<string, string> = {
+          'English': 'EN',
+          'Spanish': 'ES',
+          'French': 'FR',
+          'German': 'GE',
+          'Italian': 'IT'
+        };
+        return codes[language] || 'EN';
+      };
+
+      const voiceData = {
+        name: config.name,
+        gender: config.gender as 'Male' | 'Female',
+        language: config.language,
+        languageCode: getLanguageCode(config.language),
+        accent: config.accent,
+        voiceDNA: `Sp ${config.speed} / St ${config.stability} / Si ${config.similarity} / Ex ${config.styleExaggeration}`,
+        tags: config.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        flagIcon: '',
+      };
+
+      if (isEditMode && editingVoice) {
+        // Режим редактирования - сохраняем ID
+        onSave({ ...voiceData, id: editingVoice.id });
+      } else {
+        // Режим добавления - без ID
+        onSave(voiceData);
+      }
     };
+
+    // Проверяем заполнены ли все обязательные поля
+    const isFormValid = () => {
+      const requiredFields = [
+        config.name.trim(),
+        config.description.trim(),
+        config.tags.trim(),
+        config.language,
+        config.gender,
+        config.accent
+      ];
+
+      // В режиме добавления также требуется Voice ID
+      if (!isEditMode) {
+        requiredFields.push(config.voiceId.trim());
+      }
+
+      return requiredFields.every(field => field.length > 0);
+    };
+
+    // Обновляем подсказку при изменении полей
+    React.useEffect(() => {
+      if (!isEditMode && config.name && !isFormValid()) {
+        setStatusMessage({
+          type: 'info',
+          text: 'Please fill all fields to save'
+        });
+      } else {
+        // Очищаем подсказку если форма валидна или в режиме редактирования
+        if (statusMessage.type === 'info') {
+          setStatusMessage({ type: null, text: '' });
+        }
+      }
+    }, [config, isEditMode, statusMessage.type]);
 
     const handleApplyVoiceId = async () => {
       if (!config.voiceId.trim()) {
@@ -78,6 +181,8 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
       }
 
       setIsLoading(true);
+      setStatusMessage({ type: null, text: '' }); // Очищаем предыдущие сообщения
+      
       try {
         const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
         if (!apiKey) {
@@ -93,7 +198,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch voice: ${response.status} ${response.statusText}`);
+          throw new Error(`Invalid Voice ID`);
         }
 
         const voiceData = await response.json();
@@ -124,16 +229,23 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
           setAudioSrc(voiceData.preview_url);
         }
 
+        // Показываем сообщение об успехе
+        setStatusMessage({
+          type: 'success',
+          text: 'Voice data loaded! Please fill all fields to save'
+        });
+
         console.log("Voice data loaded:", voiceData);
       } catch (error) {
         console.error("Error loading voice data:", error);
-        alert(`Failed to load voice data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        setStatusMessage({
+          type: 'error',
+          text: error instanceof Error ? error.message : 'Invalid Voice ID'
+        });
       } finally {
         setIsLoading(false);
       }
     };
-
-
 
     if (!isOpen) return null;
 
@@ -154,7 +266,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         <div className="flex w-[618px] h-full flex-col items-center gap-0 shrink-0 shadow-[0px_8px_12px_0px_rgba(0,0,0,0.10)] relative bg-white max-md:w-[90vw] max-md:max-w-[618px] max-sm:w-[95vw] max-sm:m-5">
           {/* Header */}
           <div className="flex-shrink-0 overflow-hidden text-[#252B2F] text-ellipsis text-3xl font-bold leading-[39px] relative h-20 gap-2.5 self-stretch px-10 py-0 max-md:px-6 max-md:py-0 max-sm:text-2xl max-sm:h-[60px] max-sm:px-4 max-sm:py-0 flex items-center">
-            Add new AI voice
+            {isEditMode ? `Edit ${editingVoice?.name}` : 'Add new AI voice'}
           </div>
 
           {/* Scrollable Content */}
@@ -169,22 +281,27 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       value={config.voiceId}
                       onChange={(e) => handleInputChange("voiceId", e.target.value)}
                       placeholder="Set voice ID from Elevenlabs"
+                      disabled={isEditMode}
                       className={`flex-1 text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
                         config.voiceId ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
-                      } placeholder:text-[#9CAEC7]`}
+                      } placeholder:text-[#9CAEC7] ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
-                    <Button
-                      onClick={handleApplyVoiceId}
-                      variant="outline"
-                      disabled={isLoading || !config.voiceId.trim()}
-                      className="flex justify-center items-center h-7 px-6 rounded-3xl border-2 border-solid border-[#116EEE] text-[#116EEE] text-center text-sm font-bold leading-[21px] hover:bg-[#116EEE] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoading ? "Loading..." : "Apply"}
-                    </Button>
+                    {!isEditMode && (
+                      <Button
+                        onClick={handleApplyVoiceId}
+                        variant="outline"
+                        disabled={isLoading || !config.voiceId.trim()}
+                        className="flex justify-center items-center h-7 px-6 rounded-3xl border-2 border-solid border-[#116EEE] text-[#116EEE] text-center text-sm font-bold leading-[21px] hover:bg-[#116EEE] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? "Loading..." : "Apply"}
+                      </Button>
+                    )}
                   </div>
-                  <div className="text-[#9CAEC7] text-xs leading-[18px] mt-1">
-                    Copy the voice ID from your ElevenLabs account and click Apply to load voice data
-                  </div>
+                  {!isEditMode && (
+                    <div className="text-[#9CAEC7] text-xs leading-[18px] mt-1">
+                      Copy the voice ID from your ElevenLabs account and click Apply to load voice data
+                    </div>
+                  )}
                 </FormField>
               </FormSection>
 
@@ -229,7 +346,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       />
                     </div>
                   </FormField>
-
+                  
                   <FormField label="Language" className="flex-1">
                     <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
                       <select
@@ -244,6 +361,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                         <option value="Spanish">Spanish</option>
                         <option value="French">French</option>
                         <option value="German">German</option>
+                        <option value="Italian">Italian</option>
                       </select>
                     </div>
                   </FormField>
@@ -268,7 +386,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       </select>
                     </div>
                   </FormField>
-
+                  
                   <FormField label="Gender" className="flex-1">
                     <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
                       <select
@@ -365,23 +483,39 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
 
           {/* Footer Actions */}
           <div className="flex-shrink-0 flex flex-col items-end self-stretch shadow-[0px_-1px_0px_0px_#D6DEE6] relative bg-white px-10 py-4 max-md:px-6 max-md:py-4 max-sm:px-4 max-sm:py-3">
-            <div className="flex items-center gap-2 relative max-sm:flex-col max-sm:w-full max-sm:gap-3">
-              <Button
-                onClick={onClose}
-                variant="outline"
-                className="flex h-12 justify-center items-center gap-2.5 relative px-6 py-3 rounded-3xl border-2 border-solid border-[#DAE1EA] text-[#4B5766] text-center text-base font-bold leading-6 max-sm:w-full"
-              >
-                Close
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={!config.description || !config.gender || !config.accent || isLoading}
-                className="flex h-12 justify-center items-center gap-2.5 relative bg-[#116EEE] px-6 py-3 rounded-[32px] max-sm:w-full hover:bg-[#0F5FD9] disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <span className="text-white text-base font-bold leading-6">
-                  Save
-                </span>
-              </Button>
+            <div className="flex items-center justify-end w-full max-sm:flex-col max-sm:gap-3">
+              {/* Status Message */}
+              {statusMessage.type && (
+                <div className={`flex items-center gap-1 text-sm mr-auto max-sm:order-first max-sm:self-start max-sm:mr-0 ${
+                  statusMessage.type === 'error' ? 'text-red-600' : 'text-gray-600'
+                }`}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-1">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1" fill="none"/>
+                    <path d="M8 3.5V8.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                    <circle cx="8" cy="11" r="0.5" fill="currentColor"/>
+                  </svg>
+                  <span>{statusMessage.text}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 max-sm:w-full">
+                <Button
+                  onClick={onClose}
+                  variant="outline"
+                  className="flex h-12 justify-center items-center gap-2.5 relative px-6 py-3 rounded-3xl border-2 border-solid border-[#DAE1EA] text-[#4B5766] text-center text-base font-bold leading-6 max-sm:w-full"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={!isFormValid() || isLoading}
+                  className="flex h-12 justify-center items-center gap-2.5 relative bg-[#116EEE] px-6 py-3 rounded-[32px] max-sm:w-full hover:bg-[#0F5FD9] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  <span className="text-white text-base font-bold leading-6">
+                    Save
+                  </span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
