@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { AdvancedAudioPlayer } from "@/components/ui/advanced-audio-player";
+import { useLocalStorageVoices } from "../../hooks/useLocalStorageVoices";
 
 interface Voice {
   id: string;
@@ -7,7 +8,6 @@ interface Voice {
   accent: string;
   gender: string;
   style?: string;
-  isPremium: boolean;
   preview_url?: string;
   category?: string;
   description?: string;
@@ -64,66 +64,14 @@ const ResourceBundle: React.FC = () => {
   const [voiceSearchQuery, setVoiceSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isTagsExpanded, setIsTagsExpanded] = useState(false);
-  const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
-  const [isLoadingVoices, setIsLoadingVoices] = useState(true);
-  const [voiceLoadError, setVoiceLoadError] = useState<string | null>(null);
+  // Используем голоса из localStorage вместо ElevenLabs API
+  const { voices: availableVoices, isLoading: isLoadingVoices, error: voiceLoadError, refreshVoices } = useLocalStorageVoices();
   const flashcardInputRef = useRef<HTMLInputElement>(null);
   const audioMenuRef = useRef<HTMLDivElement>(null);
   const [expandedVoices, setExpandedVoices] = useState<Set<string>>(new Set());
   const [currentPlayingPreview, setCurrentPlayingPreview] = useState<HTMLAudioElement | null>(null);
 
-  // Функция для получения списка голосов от ElevenLabs API
-  const fetchVoices = async () => {
-    try {
-      setIsLoadingVoices(true);
-      setVoiceLoadError(null);
-      
-      const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-      const response = await fetch('https://api.elevenlabs.io/v1/voices', {
-        headers: {
-          'Accept': 'application/json',
-          'xi-api-key': apiKey
-        }
-      });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch voices: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json() as ElevenLabsResponse;
-      
-      // Фильтруем только американские и британские голоса и преобразуем в наш формат
-      const filteredVoices = data.voices
-        .filter((voice: ElevenLabsVoice) => {
-          const accent = voice.labels?.accent?.toLowerCase() || '';
-          return accent.includes('american') || accent.includes('british');
-        })
-        .map((voice: ElevenLabsVoice) => ({
-          id: voice.voice_id,
-          name: voice.name,
-          accent: voice.labels?.accent?.toLowerCase().includes('british') ? 'british' : 'american',
-          gender: voice.labels?.gender?.toLowerCase() || 'unknown',
-          style: voice.labels?.style?.toLowerCase() || 'professional narrator',
-          isPremium: voice.category === 'premium',
-          preview_url: voice.preview_url,
-          category: voice.category,
-          description: voice.description,
-          labels: voice.labels
-        }));
-
-      setAvailableVoices(filteredVoices);
-    } catch (error) {
-      console.error('Error fetching voices:', error);
-      setVoiceLoadError(error instanceof Error ? error.message : 'Failed to load voices');
-    } finally {
-      setIsLoadingVoices(false);
-    }
-  };
-
-  // Загружаем голоса при монтировании компонента
-  useEffect(() => {
-    fetchVoices();
-  }, []);
 
 
 
@@ -172,9 +120,33 @@ const ResourceBundle: React.FC = () => {
     </speak>`;
   };
 
-  // Get voice settings for educational context
-  const getVoiceSettings = (): VoiceSettings => {
-    // Settings for educational context: clearer pronunciation
+  // Get voice settings based on selected voice's VoiceDNA or use defaults
+  const getVoiceSettings = (voiceId?: string): VoiceSettings => {
+    // Ищем голос в localStorage чтобы получить его VoiceDNA настройки
+    if (voiceId) {
+      try {
+        const savedVoices = localStorage.getItem('ai-voices');
+        if (savedVoices) {
+          const voices = JSON.parse(savedVoices);
+          const selectedVoice = voices.find((v: { elevenLabsId?: string; id: string; voiceDNA?: object | string }) => v.elevenLabsId === voiceId || v.id === voiceId);
+          
+          if (selectedVoice && selectedVoice.voiceDNA) {
+            const dna = selectedVoice.voiceDNA;
+            // Конвертируем VoiceDNA (0-100) в настройки ElevenLabs (0-1)
+            return {
+              stability: typeof dna === 'object' ? (dna.stability || 40) / 100 : 0.75,
+              similarity_boost: typeof dna === 'object' ? (dna.similarity || 40) / 100 : 0.75,
+              style: typeof dna === 'object' ? (dna.styleExaggeration || 40) / 100 : 0.2,
+              use_speaker_boost: true
+            };
+          }
+        }
+      } catch (error) {
+        console.warn('Error loading voice settings from localStorage:', error);
+      }
+    }
+    
+    // Default settings for educational context: clearer pronunciation
     return {
       stability: 0.75, // Reduced stability for more natural variations
       similarity_boost: 0.75, // Increased for more natural voice
@@ -238,8 +210,8 @@ const ResourceBundle: React.FC = () => {
       
       const finalVoiceId = voiceId || selectedVoice;
 
-      // Get voice settings for educational context
-      const voiceSettings = getVoiceSettings();
+      // Get voice settings for selected voice (using VoiceDNA if available)
+      const voiceSettings = getVoiceSettings(finalVoiceId);
 
       console.log(`Generating audio for text: "${rawText}" with voice ID: ${finalVoiceId}`);
       console.log(`Using educational pronunciation with SSML`);
@@ -314,7 +286,6 @@ const ResourceBundle: React.FC = () => {
                voice.accent.toLowerCase().includes(tag.toLowerCase()) ||
                voice.gender.toLowerCase().includes(tag.toLowerCase()) ||
                (voice.description && voice.description.toLowerCase().includes(tag.toLowerCase())) ||
-               (tag === 'premium' && voice.isPremium) ||
                (voice.labels && Object.values(voice.labels).some(label => 
                  label && label.toLowerCase().includes(tag.toLowerCase())
                ));
@@ -323,28 +294,33 @@ const ResourceBundle: React.FC = () => {
     return matchesSearch && matchesTags;
   });
 
-  // Извлекаем все уникальные теги из голосов
+  // Извлекаем все уникальные теги из голосов, загруженных из localStorage
   const getUniqueTags = (): string[] => {
-    const accents = new Set(availableVoices.map(voice => voice.accent));
-    const genders = new Set(availableVoices.map(voice => voice.gender));
-    const categories = new Set(availableVoices.map(voice => voice.category || '').filter(Boolean));
+    const allUniqueTags = new Set<string>();
     
-    // Собираем все уникальные метки, исключая те, что уже есть в основных категориях
-    const allLabels = new Set(
-      availableVoices.flatMap(voice => 
-        Object.entries(voice.labels || {})
-          .filter(([key, value]) => 
-            !['accent', 'gender'].includes(key) && 
-            value !== voice.accent &&
-            value !== voice.gender &&
-            Boolean(value)
-          )
-          .map(([_, value]) => value)
-      )
-    );
+    // Всегда добавляем 'all' первым
+    allUniqueTags.add('all');
     
-    return ['all', ...Array.from(accents), ...Array.from(genders), 
-            ...Array.from(categories), ...Array.from(allLabels)];
+    // Собираем все теги из голосов
+    availableVoices.forEach(voice => {
+      // Добавляем основные характеристики
+      allUniqueTags.add(voice.accent);
+      allUniqueTags.add(voice.gender);
+      
+      // Добавляем пользовательские теги из labels
+      Object.entries(voice.labels || {}).forEach(([key, value]) => {
+        if (key.startsWith('tag_') && Boolean(value)) {
+          allUniqueTags.add(value);
+        }
+      });
+    });
+    
+    // Конвертируем в массив и сортируем (кроме 'all' который остается первым)
+    const sortedTags = Array.from(allUniqueTags);
+    const all = sortedTags.filter(tag => tag === 'all');
+    const otherTags = sortedTags.filter(tag => tag !== 'all').sort();
+    
+    return [...all, ...otherTags];
   };
   
   // Обновляем функцию выбора тега
@@ -637,7 +613,7 @@ const ResourceBundle: React.FC = () => {
                               <div className="p-4 text-center text-red-500">
                                 Error: {voiceLoadError}
                                 <button 
-                                  onClick={fetchVoices}
+                                  onClick={refreshVoices}
                                   className="mt-2 px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
                                 >
                                   Retry
@@ -684,7 +660,7 @@ const ResourceBundle: React.FC = () => {
                                       }
                                     }}
                                   >
-                                    {/* Первая строка: Имя, акцент, пол и премиум статус */}
+                                    {/* Первая строка: Имя, акцент, пол */}
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <span className="font-medium text-gray-800 truncate">
@@ -693,13 +669,6 @@ const ResourceBundle: React.FC = () => {
                                             : `${voice.name} (${voice.accent.charAt(0).toUpperCase() + voice.accent.slice(1)}, ${voice.gender.charAt(0).toUpperCase() + voice.gender.slice(1)})`
                                           }
                                         </span>
-                                      </div>
-                                      <div className="flex items-center gap-2 flex-shrink-0">
-                                        {voice.isPremium && (
-                                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700 rounded-full border border-orange-200">
-                                            PRO
-                                          </span>
-                                        )}
                                       </div>
                                     </div>
 
@@ -724,21 +693,14 @@ const ResourceBundle: React.FC = () => {
                                         {/* Теги */}
                                         {hasTags && (
                                           <div className="flex flex-wrap gap-1 mb-3">
-                                            {availableTags
-                                              .slice(0, 4) // Показываем максимум 4 тега
-                                              .map(([key, value]) => (
-                                                <span
-                                                  key={key}
-                                                  className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600"
-                                                >
-                                                  {value}
-                                                </span>
-                                              ))}
-                                            {availableTags.length > 4 && (
-                                              <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
-                                                +{availableTags.length - 4}
+                                            {availableTags.map(([key, value]) => (
+                                              <span
+                                                key={key}
+                                                className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600"
+                                              >
+                                                {value}
                                               </span>
-                                            )}
+                                            ))}
                                           </div>
                                         )}
 
