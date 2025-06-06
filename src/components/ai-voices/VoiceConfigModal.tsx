@@ -9,6 +9,8 @@ import { SliderInput } from '../ui/slider-input';
 import { AdvancedAudioPlayer } from '../ui/advanced-audio-player';
 import { Textarea } from '../ui/textarea';
 import { Voice, VoiceDNA } from '../../types/voice';
+import { useVoicePreview } from '../../hooks/useVoicePreview';
+import { useVoiceData } from '../../hooks/useVoiceData';
 
 interface VoiceConfigModalProps {
   isOpen: boolean;
@@ -50,9 +52,10 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
       styleExaggeration: 40,
     });
 
-    // Audio player state
-    const [audioSrc, setAudioSrc] = React.useState<string | null>(null);
-    const [isLoading, setIsLoading] = React.useState(false);
+    // Audio player state using hook
+    const { audioSrc, loadPreview, clearPreview } = useVoicePreview();
+    // Voice data loading hook
+    const { isLoading, loadVoiceData } = useVoiceData();
     const [statusMessage, setStatusMessage] = React.useState<{
       type: 'success' | 'error' | 'info' | null;
       text: string;
@@ -80,7 +83,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         });
         // Автоматически загружаем voice preview при редактировании
         console.log("Загружаем voice preview для ElevenLabs ID:", elevenLabsId);
-        loadVoicePreview(elevenLabsId);
+        loadPreview(elevenLabsId);
       } else {
         // Сбрасываем форму при добавлении нового голоса
         setConfig({
@@ -96,7 +99,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
           similarity: 40,
           styleExaggeration: 40,
         });
-        setAudioSrc(null);
+                  clearPreview();
       }
     }, [isEditMode, editingVoice, isOpen]);
 
@@ -105,57 +108,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
       console.log("audioSrc изменился:", audioSrc);
     }, [audioSrc]);
 
-    // Функция для загрузки voice preview
-    const loadVoicePreview = async (voiceId: string) => {
-      console.log("=== НАЧАЛО loadVoicePreview ===");
-      console.log("voiceId:", voiceId);
-      
-      if (!voiceId.trim()) {
-        console.log("voiceId пустой, выходим");
-        return;
-      }
 
-      try {
-        const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-        console.log("API ключ найден:", !!apiKey);
-        
-        if (!apiKey) {
-          console.warn("ElevenLabs API key not found for voice preview");
-          return;
-        }
-
-        console.log("Делаем запрос к ElevenLabs API для ID:", voiceId);
-
-        // Получаем информацию о голосе для preview
-        const response = await fetch(`https://api.elevenlabs.io/v1/voices/${voiceId}`, {
-          headers: {
-            'Accept': 'application/json',
-            'xi-api-key': apiKey
-          }
-        });
-
-        console.log("Ответ от API:", response.status, response.statusText);
-
-        if (response.ok) {
-          const voiceData = await response.json();
-          console.log("Voice data получен:", voiceData);
-          
-          // Устанавливаем preview аудио если доступно
-          if (voiceData.preview_url) {
-            console.log("Устанавливаем реальный preview от ElevenLabs:", voiceData.preview_url);
-            setAudioSrc(voiceData.preview_url);
-          } else {
-            console.log("Preview URL не найден в данных голоса");
-          }
-        } else {
-          console.warn("Ошибка при загрузке данных голоса:", response.status, response.statusText);
-        }
-      } catch (error) {
-        console.warn("Error loading voice preview:", error);
-      }
-      
-      console.log("=== КОНЕЦ loadVoicePreview ===");
-    };
 
     const handleInputChange = (field: keyof VoiceConfig, value: string | number) => {
       setConfig(prev => ({ ...prev, [field]: value }));
@@ -261,28 +214,10 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         return;
       }
 
-      setIsLoading(true);
       setStatusMessage({ type: null, text: '' }); // Очищаем предыдущие сообщения
       
       try {
-        const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
-        if (!apiKey) {
-          throw new Error("ElevenLabs API key not found");
-        }
-
-        // Получаем информацию о голосе
-        const response = await fetch(`https://api.elevenlabs.io/v1/voices/${config.voiceId}`, {
-          headers: {
-            'Accept': 'application/json',
-            'xi-api-key': apiKey
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`Invalid Voice ID`);
-        }
-
-        const voiceData = await response.json();
+        const voiceData = await loadVoiceData(config.voiceId);
         
         // Обновляем конфигурацию с полученными данными
         setConfig(prev => ({
@@ -305,10 +240,8 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                   voiceData.labels?.accent?.includes('canadian') ? 'Canadian' : ""
         }));
 
-        // Устанавливаем preview аудио если доступно
-        if (voiceData.preview_url) {
-          setAudioSrc(voiceData.preview_url);
-        }
+        // Загружаем preview
+        loadPreview(config.voiceId);
 
         // Показываем сообщение об успехе
         setStatusMessage({
@@ -323,8 +256,6 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
           type: 'error',
           text: error instanceof Error ? error.message : 'Invalid Voice ID'
         });
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -374,7 +305,14 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                         disabled={isLoading || !config.voiceId.trim()}
                         className="flex justify-center items-center h-7 px-6 rounded-3xl border-2 border-solid border-[#116EEE] text-[#116EEE] text-center text-sm font-bold leading-[21px] hover:bg-[#116EEE] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isLoading ? "Loading..." : "Apply"}
+                        {isLoading ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-[#116EEE] border-t-transparent rounded-full animate-spin"></div>
+                            Loading...
+                          </div>
+                        ) : (
+                          "Apply"
+                        )}
                       </Button>
                     )}
                   </div>
@@ -589,7 +527,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={!isFormValid() || isLoading}
+                                     disabled={!isFormValid() || isLoading}
                   className="flex h-12 justify-center items-center gap-2.5 relative bg-[#116EEE] px-6 py-3 rounded-[32px] max-sm:w-full hover:bg-[#0F5FD9] disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   <span className="text-white text-base font-bold leading-6">

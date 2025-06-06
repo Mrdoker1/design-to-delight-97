@@ -5,86 +5,11 @@ import { NavigationTabs } from '../components/ai-voices/NavigationTabs';
 import { FilterControls } from '../components/ai-voices/FilterControls';
 import { VoiceTable } from '../components/ai-voices/VoiceTable';
 import { Pagination } from '../components/ai-voices/Pagination';
-import { Voice, FilterState, VoiceDNA } from '../types/voice';
-import { parseVoiceDNAString } from '../utils/voiceDNA';
+import { Voice, FilterState } from '../types/voice';
+import { useVoices } from '../hooks/useVoices';
 
 export default function AIVoices() {
-  // Функция для загрузки голосов из local storage
-  const loadVoicesFromStorage = (): Voice[] => {
-    try {
-      const savedVoices = localStorage.getItem('ai-voices');
-      if (savedVoices) {
-        const voices = JSON.parse(savedVoices);
-        // Конвертируем старые голоса со строковым VoiceDNA в новый формат
-        return voices.map((voice: Voice | (Omit<Voice, 'voiceDNA'> & { voiceDNA: string })) => {
-          if (typeof voice.voiceDNA === 'string') {
-            return {
-              ...voice,
-              voiceDNA: parseVoiceDNAString(voice.voiceDNA)
-            };
-          }
-          return voice;
-        });
-      }
-    } catch (error) {
-      console.error('Error loading voices from localStorage:', error);
-    }
-    
-    // Возвращаем тестовые голоса с реальными ElevenLabs ID если нет сохраненных данных
-    return [
-      {
-        id: "voice_1", // Уникальный ID для localStorage
-        name: "Rachel",
-        gender: "Female",
-        language: "English",
-        languageCode: "EN",
-        accent: "American",
-        voiceDNA: { speed: 40, stability: 40, similarity: 40, styleExaggeration: 40 },
-        tags: ["calm", "young"],
-        flagIcon: "",
-        description: "A calm and pleasant voice, perfect for narration and storytelling.",
-        elevenLabsId: "21m00Tcm4TlvDq8ikWAM" // Реальный ID голоса от ElevenLabs (Rachel)
-      },
-      {
-        id: "voice_2", // Уникальный ID для localStorage
-        name: "Bella",
-        gender: "Female", 
-        language: "English",
-        languageCode: "EN",
-        accent: "American",
-        voiceDNA: { speed: 45, stability: 35, similarity: 50, styleExaggeration: 30 },
-        tags: ["warm", "friendly"],
-        flagIcon: "",
-        description: "A warm and friendly voice with a youthful energy.",
-        elevenLabsId: "EXAVITQu4vr4xnSDxMaL" // Реальный ID голоса от ElevenLabs (Bella)
-      },
-      {
-        id: "voice_3", // Уникальный ID для localStorage
-        name: "Antoni",
-        gender: "Male",
-        language: "English", 
-        languageCode: "EN",
-        accent: "American",
-        voiceDNA: { speed: 50, stability: 40, similarity: 45, styleExaggeration: 35 },
-        tags: ["professional", "mature"],
-        flagIcon: "",
-        description: "A professional and mature male voice, great for business content.",
-        elevenLabsId: "ErXwobaYiN019PkySvjV" // Реальный ID голоса от ElevenLabs (Antoni)
-      }
-    ];
-  };
-
-  // Функция для сохранения голосов в local storage
-  const saveVoicesToStorage = (voicesToSave: Voice[]) => {
-    try {
-      localStorage.setItem('ai-voices', JSON.stringify(voicesToSave));
-      console.log('Voices saved to localStorage:', voicesToSave);
-    } catch (error) {
-      console.error('Error saving voices to localStorage:', error);
-    }
-  };
-
-  const [voices, setVoices] = useState<Voice[]>(() => loadVoicesFromStorage());
+  const { voices, addVoice, updateVoice, deleteVoice } = useVoices();
   const [editingVoice, setEditingVoice] = useState<Voice | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     language: '',
@@ -115,27 +40,7 @@ export default function AIVoices() {
 
   const totalPages = Math.ceil(filteredVoices.length / rowsPerPage);
 
-  const handleAddVoice = (voiceData: Omit<Voice, 'id'>) => {
-    const newVoice: Voice = {
-      ...voiceData,
-      id: Date.now().toString(), // Простой способ генерации ID для новых голосов
-    };
-    const updatedVoices = [...voices, newVoice];
-    setVoices(updatedVoices);
-    saveVoicesToStorage(updatedVoices);
-  };
-
-  const handleEditVoice = (updatedVoice: Voice) => {
-    console.log('Сохраняем отредактированный голос:', updatedVoice);
-    const updatedVoices = voices.map(voice => 
-      voice.id === updatedVoice.id ? updatedVoice : voice
-    );
-    setVoices(updatedVoices);
-    saveVoicesToStorage(updatedVoices);
-  };
-
   const handleEdit = (voice: Voice) => {
-    // Эта функция будет вызываться из VoiceTable и должна передать голос в NavigationTabs
     setEditingVoice(voice);
   };
 
@@ -145,9 +50,7 @@ export default function AIVoices() {
     );
     
     if (confirmDelete) {
-      const updatedVoices = voices.filter(v => v.id !== voice.id);
-      setVoices(updatedVoices);
-      saveVoicesToStorage(updatedVoices);
+      deleteVoice(voice);
       
       // Если удаляемый голос был в режиме редактирования, закрываем модал
       if (editingVoice && editingVoice.id === voice.id) {
@@ -180,8 +83,8 @@ export default function AIVoices() {
           </header>
           
           <NavigationTabs 
-            onAddVoice={handleAddVoice}
-            onEditVoice={handleEditVoice}
+            onAddVoice={addVoice}
+            onEditVoice={updateVoice}
             editingVoice={editingVoice}
             onEditingVoiceChange={setEditingVoice}
           />
