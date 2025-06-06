@@ -1,0 +1,319 @@
+"use client";
+
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+
+import { SliderInput } from "@/components/ui/slider-input";
+import { FormSection, FormField } from "@/components/ui/form-section";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AdvancedAudioPlayer } from "@/components/ui/advanced-audio-player";
+
+interface VoiceConfigModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  className?: string;
+}
+
+interface VoiceConfig {
+  voiceId: string;
+  description: string;
+  tags: string;
+  language: string;
+  gender: string;
+  accent: string;
+  speed: number;
+  stability: number;
+  similarity: number;
+  styleExaggeration: number;
+}
+
+export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModalProps>(
+  ({ isOpen, onClose, className, ...props }, ref) => {
+      const [config, setConfig] = React.useState<VoiceConfig>({
+    voiceId: "",
+    description: "Perfect for news content",
+    tags: "clear, calm, dialogue, warm, english, british, female",
+    language: "English",
+    gender: "Female",
+    accent: "British",
+    speed: 40,
+    stability: 40,
+    similarity: 40,
+    styleExaggeration: 40,
+  });
+
+  // Audio player state
+  const [audioSrc, setAudioSrc] = React.useState<string | null>(null);
+
+    const handleInputChange = (field: keyof VoiceConfig, value: string | number) => {
+      setConfig(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleReset = () => {
+      setConfig(prev => ({
+        ...prev,
+        speed: 40,
+        stability: 40,
+        similarity: 40,
+        styleExaggeration: 40,
+      }));
+    };
+
+    const handleSave = () => {
+      console.log("Saving voice configuration:", config);
+      onClose();
+    };
+
+    const handleApplyVoiceId = () => {
+      console.log("Applying voice ID:", config.voiceId);
+      // Для демонстрации загружаем тестовое аудио
+      if (config.voiceId.trim()) {
+        // Здесь должна быть логика генерации аудио с ElevenLabs API
+        // Пока что загружаем тестовое аудио
+        setAudioSrc("https://www.soundjay.com/misc/sounds/bell-ringing-05.wav");
+      }
+    };
+
+
+
+    if (!isOpen) return null;
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "flex w-screen h-screen justify-end items-center gap-2.5 fixed z-[1000] bg-[rgba(0,0,0,0.30)] px-px py-0 left-0 top-0",
+          className
+        )}
+        {...props}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
+        <div className="flex w-[618px] h-full flex-col items-center gap-0 shrink-0 shadow-[0px_8px_12px_0px_rgba(0,0,0,0.10)] relative bg-white max-md:w-[90vw] max-md:max-w-[618px] max-sm:w-[95vw] max-sm:m-5">
+          {/* Header */}
+          <div className="flex-shrink-0 overflow-hidden text-[#252B2F] text-ellipsis text-3xl font-bold leading-[39px] relative h-20 gap-2.5 self-stretch px-10 py-0 max-md:px-6 max-md:py-0 max-sm:text-2xl max-sm:h-[60px] max-sm:px-4 max-sm:py-0 flex items-center">
+            Emma
+          </div>
+
+          {/* Scrollable Content */}
+          <ScrollArea className="flex-1 w-full">
+            <div className="flex flex-col items-start gap-3 px-10 py-6 max-md:px-6 max-md:py-6 max-sm:gap-4 max-sm:px-4 max-sm:py-4">
+              {/* Voice ID Section */}
+              <FormSection>
+                <FormField label="Voice ID">
+                  <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                    <input
+                      type="text"
+                      value={config.voiceId}
+                      onChange={(e) => handleInputChange("voiceId", e.target.value)}
+                      placeholder="Set voice ID from Elevenlabs"
+                      className={`flex-1 text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                        config.voiceId ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                      } placeholder:text-[#9CAEC7]`}
+                    />
+                    <Button
+                      onClick={handleApplyVoiceId}
+                      variant="outline"
+                      className="flex justify-center items-center h-7 px-6 rounded-3xl border-2 border-solid border-[#116EEE] text-[#116EEE] text-center text-sm font-bold leading-[21px] hover:bg-[#116EEE] hover:text-white"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </FormField>
+              </FormSection>
+
+              {/* Audio Example */}
+              <FormSection>
+                <AdvancedAudioPlayer 
+                  audioSrc={audioSrc}
+                  label="Audio Example"
+                />
+              </FormSection>
+
+              {/* Description and Tags */}
+              <FormSection>
+                <FormField label="Description">
+                  <Textarea
+                    value={config.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    className="self-stretch text-[#252B2F] text-lg font-normal leading-[27px] relative h-[86px] border bg-white p-2 rounded-lg border-solid border-[#D6DEE6] resize-none"
+                  />
+                </FormField>
+
+                <FormField label="Tags (separated by a comma)">
+                  <Textarea
+                    value={config.tags}
+                    onChange={(e) => handleInputChange("tags", e.target.value)}
+                    className="self-stretch text-[#252B2F] text-lg font-normal leading-[27px] relative h-[86px] border bg-white p-2 rounded-lg border-solid border-[#D6DEE6] resize-none"
+                  />
+                </FormField>
+
+                {/* Language and Gender Row */}
+                <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
+                  <FormField label="Language" className="flex-1">
+                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                      <select
+                        value={config.language}
+                        onChange={(e) => handleInputChange("language", e.target.value)}
+                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                          config.language ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                        }`}
+                      >
+                        <option value="">Select Language</option>
+                        <option value="English">English</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                      </select>
+                    </div>
+                  </FormField>
+
+                  <FormField label="Gender" className="flex-1">
+                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                      <select
+                        value={config.gender}
+                        onChange={(e) => handleInputChange("gender", e.target.value)}
+                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                          config.gender ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                        }`}
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Non-binary">Non-binary</option>
+                      </select>
+                    </div>
+                  </FormField>
+                </div>
+
+                {/* Accent Row */}
+                <div className="flex h-[66px] items-start gap-5 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
+                  <FormField label="Accent" className="flex-1">
+                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                      <select
+                        value={config.accent}
+                        onChange={(e) => handleInputChange("accent", e.target.value)}
+                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                          config.accent ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                        }`}
+                      >
+                        <option value="">Select Accent</option>
+                        <option value="British">British</option>
+                        <option value="American">American</option>
+                        <option value="Australian">Australian</option>
+                        <option value="Canadian">Canadian</option>
+                      </select>
+                    </div>
+                  </FormField>
+                </div>
+              </FormSection>
+
+              {/* Voice DNA Section */}
+              <div className="flex flex-col items-start gap-8 self-stretch relative pt-4 pb-6 px-0 max-sm:gap-6 max-sm:pt-3 max-sm:pb-5 max-sm:px-0">
+                <div className="flex items-center gap-6 self-stretch relative">
+                  <div className="text-[#4B5766] text-sm font-normal leading-[21px] relative">
+                    Voice DNA
+                  </div>
+                  <div className="w-[443px] h-px relative bg-[#DAE1EA] max-md:w-full" />
+                </div>
+
+                <div className="flex items-start gap-6 self-stretch flex-col relative max-sm:gap-5">
+                  {/* First Row of Sliders */}
+                  <div className="flex items-start gap-6 self-stretch relative max-md:flex-col max-md:gap-4 max-sm:gap-5">
+                    <SliderInput
+                      label="Speed (sp)"
+                      value={config.speed}
+                      onChange={(value) => handleInputChange("speed", value)}
+                      showInfo
+                    />
+                    <SliderInput
+                      label="Stability (st)"
+                      value={config.stability}
+                      onChange={(value) => handleInputChange("stability", value)}
+                      showInfo
+                    />
+                  </div>
+
+                  {/* Second Row of Sliders */}
+                  <div className="flex items-start gap-6 self-stretch relative max-md:flex-col max-md:gap-4 max-sm:gap-5">
+                    <SliderInput
+                      label="Similarity (si)"
+                      value={config.similarity}
+                      onChange={(value) => handleInputChange("similarity", value)}
+                      showInfo
+                    />
+                    <SliderInput
+                      label="Style Exaggeration (ex)"
+                      value={config.styleExaggeration}
+                      onChange={(value) => handleInputChange("styleExaggeration", value)}
+                      showInfo
+                    />
+                  </div>
+                </div>
+
+                {/* Reset Button */}
+                <div className="flex items-start self-stretch relative">
+                  <Button
+                    onClick={handleReset}
+                    variant="ghost"
+                    className="flex justify-center items-center gap-2.5 relative px-0 py-3 rounded-3xl hover:bg-transparent"
+                  >
+                    <div className="flex justify-center items-center gap-2 relative">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="reset-icon"
+                        style={{ width: "20px", height: "20px", position: "relative" }}
+                      >
+                        <path
+                          d="M15.4045 2.48837C15.1836 2.49161 14.973 2.5824 14.8191 2.74079C14.6651 2.89918 14.5803 3.11222 14.5833 3.3331V4.0704C13.315 3.08801 11.7243 2.49976 10 2.49976C5.8676 2.49976 2.5 5.86736 2.5 9.99976C2.5 14.1322 5.8676 17.4998 10 17.4998C14.1324 17.4998 17.5 14.1322 17.5 9.99976C17.5 9.67103 17.4726 9.35903 17.4357 9.06308C17.4241 8.95287 17.3907 8.84608 17.3373 8.74895C17.2839 8.65183 17.2117 8.56632 17.1249 8.49744C17.0381 8.42855 16.9385 8.37767 16.8318 8.34776C16.7251 8.31786 16.6135 8.30954 16.5035 8.32328C16.3935 8.33703 16.2874 8.37257 16.1914 8.42782C16.0953 8.48306 16.0112 8.55692 15.944 8.64505C15.8769 8.73319 15.8279 8.83383 15.8001 8.9411C15.7723 9.04837 15.7662 9.16011 15.7821 9.26978C15.8135 9.52133 15.8333 9.76266 15.8333 9.99976C15.8333 13.2315 13.2318 15.8331 10 15.8331C6.76823 15.8331 4.16667 13.2315 4.16667 9.99976C4.16667 6.768 6.76823 4.16643 10 4.16643C11.0979 4.16643 12.1172 4.47428 12.9907 4.99976H12.9167C12.8062 4.9982 12.6966 5.0186 12.5941 5.05978C12.4917 5.10096 12.3984 5.16209 12.3197 5.23963C12.2411 5.31717 12.1787 5.40956 12.136 5.51144C12.0934 5.61332 12.0715 5.72266 12.0715 5.8331C12.0715 5.94353 12.0934 6.05287 12.136 6.15475C12.1787 6.25663 12.2411 6.34903 12.3197 6.42656C12.3984 6.5041 12.4917 6.56523 12.5941 6.60641C12.6966 6.64759 12.8062 6.66799 12.9167 6.66643H15.2034H15.4167C15.6377 6.66641 15.8496 6.5786 16.0059 6.42233C16.1622 6.26605 16.25 6.0541 16.25 5.8331V3.3331C16.2515 3.22168 16.2307 3.11108 16.1887 3.00785C16.1468 2.90462 16.0845 2.81086 16.0057 2.7321C15.9269 2.65334 15.833 2.5912 15.7298 2.54933C15.6265 2.50747 15.5159 2.48674 15.4045 2.48837Z"
+                          fill="#116EEE"
+                        />
+                      </svg>
+                      <div className="text-[#116EEE] text-center text-base font-bold leading-6 underline decoration-solid decoration-auto underline-offset-auto relative">
+                        Reset values
+                      </div>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+
+          {/* Footer Actions */}
+          <div className="flex-shrink-0 flex flex-col items-end self-stretch shadow-[0px_-1px_0px_0px_#D6DEE6] relative bg-white px-10 py-4 max-md:px-6 max-md:py-4 max-sm:px-4 max-sm:py-3">
+            <div className="flex items-center gap-2 relative max-sm:flex-col max-sm:w-full max-sm:gap-3">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="flex h-12 justify-center items-center gap-2.5 relative px-6 py-3 rounded-3xl border-2 border-solid border-[#DAE1EA] text-[#4B5766] text-center text-base font-bold leading-6 max-sm:w-full"
+              >
+                Close
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="flex h-12 justify-center items-center gap-2.5 relative bg-[#116EEE] px-6 py-3 rounded-[32px] max-sm:w-full hover:bg-[#0F5FD9]"
+              >
+                <span className="text-white text-base font-bold leading-6">
+                  Save
+                </span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+);
+
+VoiceConfigModal.displayName = "VoiceConfigModal"; 
