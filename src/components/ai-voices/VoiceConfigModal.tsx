@@ -442,12 +442,14 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       value={config.speed}
                       onChange={(value) => handleInputChange("speed", value)}
                       showInfo
+                      tooltipContent="Controls the speed of the generated speech. Values below 1.0 will slow down the speech, while values above 1.0 will speed it up. Extreme values may affect the quality of the generated speech."
                     />
                     <SliderInput
                       label="Stability (st)"
                       value={config.stability}
                       onChange={(value) => handleInputChange("stability", value)}
                       showInfo
+                      tooltipContent="Increasing stability will make the voice more consistent between re-generations, but it can also make it sounds a bit monotone. On longer text fragments we recommend lowering this value."
                     />
                   </div>
 
@@ -458,12 +460,14 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       value={config.similarity}
                       onChange={(value) => handleInputChange("similarity", value)}
                       showInfo
+                      tooltipContent="High enhancement boosts overall voice clarity and target speaker similarity. Very high values can cause artifacts, so adjusting this setting to find the optimal value is encouraged."
                     />
                     <SliderInput
                       label="Style Exaggeration (ex)"
                       value={config.styleExaggeration}
                       onChange={(value) => handleInputChange("styleExaggeration", value)}
                       showInfo
+                      tooltipContent="High values are recommended if the style of the speech should be exaggerated compared to the uploaded audio. Higher values can lead to more instability in the generated speech. Setting this to 0.0 will greatly increase generation speed and is the default setting."
                     />
                   </div>
                 </div>

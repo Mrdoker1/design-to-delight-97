@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "./tooltip";
 
 interface SliderInputProps {
   label: string;
@@ -11,11 +12,12 @@ interface SliderInputProps {
   max?: number;
   step?: number;
   showInfo?: boolean;
+  tooltipContent?: string;
   className?: string;
 }
 
 export const SliderInput = React.forwardRef<HTMLDivElement, SliderInputProps>(
-  ({ label, value, onChange, min = 0, max = 100, step = 1, showInfo = false, className, ...props }, ref) => {
+  ({ label, value, onChange, min = 0, max = 100, step = 1, showInfo = false, tooltipContent, className, ...props }, ref) => {
     const percentage = ((value - min) / (max - min)) * 100;
 
     const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +39,10 @@ export const SliderInput = React.forwardRef<HTMLDivElement, SliderInputProps>(
               {label}
             </div>
             {showInfo && (
-              <div>
+              <Tooltip 
+                content={tooltipContent || ""}
+                position="top"
+              >
                 <svg
                   width="16"
                   height="16"
@@ -52,7 +57,7 @@ export const SliderInput = React.forwardRef<HTMLDivElement, SliderInputProps>(
                     fill="#116EEE"
                   />
                 </svg>
-              </div>
+              </Tooltip>
             )}
           </div>
           <div className="flex w-[65px] h-9 items-center gap-2 border relative px-2 py-2.5 rounded-lg border-solid border-[#DAE1EA]">
