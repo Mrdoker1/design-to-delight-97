@@ -64,7 +64,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         setConfig({
           voiceId: editingVoice.id,
           name: editingVoice.name,
-          description: '', // Возможно нужно добавить в тип Voice
+          description: editingVoice.description || '',
           tags: editingVoice.tags.join(', '),
           language: editingVoice.language,
           gender: editingVoice.gender,
@@ -129,6 +129,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
         voiceDNA: `Sp ${config.speed} / St ${config.stability} / Si ${config.similarity} / Ex ${config.styleExaggeration}`,
         tags: config.tags.split(',').map(tag => tag.trim()).filter(Boolean),
         flagIcon: '',
+        description: config.description,
       };
 
       if (isEditMode && editingVoice) {
@@ -144,16 +145,17 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
     const isFormValid = () => {
       const requiredFields = [
         config.name.trim(),
-        config.description.trim(),
-        config.tags.trim(),
         config.language,
         config.gender,
         config.accent
       ];
 
-      // В режиме добавления также требуется Voice ID
+      // В режиме добавления также требуется Voice ID и description
       if (!isEditMode) {
-        requiredFields.push(config.voiceId.trim());
+        requiredFields.push(
+          config.voiceId.trim(),
+          config.description.trim()
+        );
       }
 
       return requiredFields.every(field => field.length > 0);

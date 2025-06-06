@@ -8,6 +8,7 @@ export interface Voice {
   voiceDNA: string;
   tags: string[];
   flagIcon: string;
+  description?: string;
 }
 
 export interface FilterState {
