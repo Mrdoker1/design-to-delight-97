@@ -11,6 +11,7 @@ import { Textarea } from '../ui/textarea';
 import { Voice, VoiceDNA } from '../../types/voice';
 import { useVoicePreview } from '../../hooks/useVoicePreview';
 import { useVoiceData } from '../../hooks/useVoiceData';
+import { useAccents } from '../../hooks/useAccents';
 
 interface VoiceConfigModalProps {
   isOpen: boolean;
@@ -33,6 +34,171 @@ interface VoiceConfig {
   similarity: number;
   styleExaggeration: number;
 }
+
+// Кастомный дропдаун компонент для акцентов
+const CustomAccentDropdown = ({ 
+  value, 
+  onChange, 
+  className 
+}: { 
+  value: string; 
+  onChange: (value: string) => void; 
+  className?: string;
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [newAccent, setNewAccent] = React.useState('');
+  const [showInput, setShowInput] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  const { allAccents, addCustomAccent, removeCustomAccent, isCustomAccent } = useAccents();
+
+  // Закрытие дропдауна при клике вне его
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setShowInput(false);
+        setNewAccent('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (accent: string) => {
+    onChange(accent);
+    setIsOpen(false);
+  };
+
+  const handleAddNew = () => {
+    setShowInput(true);
+  };
+
+  const handleSaveNew = () => {
+    if (addCustomAccent(newAccent)) {
+      onChange(newAccent.trim());
+      setNewAccent('');
+      setShowInput(false);
+      setIsOpen(false);
+    }
+  };
+
+  const handleInputKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveNew();
+    } else if (e.key === 'Escape') {
+      setShowInput(false);
+      setNewAccent('');
+    }
+  };
+
+  const handleRemoveCustomAccent = (accentToRemove: string) => {
+    removeCustomAccent(accentToRemove);
+    // Если удаляемый акцент выбран сейчас, сбрасываем выбор
+    if (value === accentToRemove) {
+      onChange('');
+    }
+  };
+
+  return (
+    <div className={cn("relative w-full", className)} ref={dropdownRef}>
+      <div 
+        className="flex h-10 w-full items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6] cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] ${
+          value ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+        }`}>
+          {value || 'Select Accent'}
+        </span>
+        <svg 
+          className={`w-4 h-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <polyline points="6,9 12,15 18,9"></polyline>
+        </svg>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 bg-white border border-[#D6DEE6] rounded-lg shadow-lg mt-1 overflow-hidden">
+          {/* Прокручиваемая область со списком акцентов */}
+          <div className="max-h-48 overflow-y-auto">
+            {allAccents.map((accent) => {
+              const isCustom = isCustomAccent(accent);
+              return (
+                <div
+                  key={accent}
+                  className="group px-3 py-2 hover:bg-gray-50 cursor-pointer text-[15px] font-normal leading-[22.5px] text-[#252B2F] flex items-center justify-between"
+                  onClick={() => handleSelect(accent)}
+                >
+                  <span>{accent}</span>
+                  {isCustom && (
+                    <button
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-100 rounded"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveCustomAccent(accent);
+                      }}
+                      title="Remove accent"
+                    >
+                      <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Фиксированная область внизу с разделителем и кнопкой добавления */}
+          <div className="border-t border-[#D6DEE6]">
+            {showInput ? (
+              <div className="p-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newAccent}
+                    onChange={(e) => setNewAccent(e.target.value)}
+                    onKeyDown={handleInputKeyPress}
+                    placeholder="Enter new accent"
+                    className="flex-1 px-2 py-1 border border-[#D6DEE6] rounded text-[14px] focus:outline-none focus:border-[#116EEE]"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveNew}
+                    className="w-7 h-7 bg-[#116EEE] text-white rounded-full hover:bg-[#0F5FD9] flex items-center justify-center"
+                    title="Save accent"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-[15px] font-normal leading-[22.5px] text-[#116EEE] flex items-center gap-2"
+                onClick={handleAddNew}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add new...
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModalProps>(
   ({ isOpen, onClose, onSave, editingVoice, className, ...props }, ref) => {
@@ -389,21 +555,10 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                 {/* Accent and Gender Row */}
                 <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
                   <FormField label="Accent" className="flex-1">
-                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
-                      <select
-                        value={config.accent}
-                        onChange={(e) => handleInputChange("accent", e.target.value)}
-                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
-                          config.accent ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
-                        }`}
-                      >
-                        <option value="">Select Accent</option>
-                        <option value="British">British</option>
-                        <option value="American">American</option>
-                        <option value="Australian">Australian</option>
-                        <option value="Canadian">Canadian</option>
-                      </select>
-                    </div>
+                    <CustomAccentDropdown
+                      value={config.accent}
+                      onChange={(value) => handleInputChange("accent", value)}
+                    />
                   </FormField>
                   
                   <FormField label="Gender" className="flex-1">
