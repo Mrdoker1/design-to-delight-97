@@ -137,14 +137,14 @@ const CustomAccentDropdown = ({
                   <span>{accent}</span>
                   {isCustom && (
                     <button
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-red-100 rounded"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-100 rounded"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveCustomAccent(accent);
                       }}
                       title="Remove accent"
                     >
-                      <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
@@ -174,7 +174,7 @@ const CustomAccentDropdown = ({
                     className="w-7 h-7 bg-[#116EEE] text-white rounded-full hover:bg-[#0F5FD9] flex items-center justify-center"
                     title="Save accent"
                   >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                       <line x1="12" y1="5" x2="12" y2="19"></line>
                       <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
