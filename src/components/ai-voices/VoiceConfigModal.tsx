@@ -39,11 +39,13 @@ interface VoiceConfig {
 const CustomAccentDropdown = ({ 
   value, 
   onChange, 
-  className 
+  className,
+  disabled = false
 }: { 
   value: string; 
   onChange: (value: string) => void; 
   className?: string;
+  disabled?: boolean;
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [newAccent, setNewAccent] = React.useState('');
@@ -104,13 +106,17 @@ const CustomAccentDropdown = ({
   return (
     <div className={cn("relative w-full", className)} ref={dropdownRef}>
       <div 
-        className="flex h-10 w-full items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6] cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
+        className={`flex h-10 w-full items-center gap-2 self-stretch border relative p-2 rounded-lg border-solid border-[#D6DEE6] ${
+          disabled 
+            ? 'bg-gray-50 cursor-not-allowed opacity-60' 
+            : 'bg-white cursor-pointer'
+        }`}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <span className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] ${
           value ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
         }`}>
-          {value || 'Select Accent'}
+          {disabled ? 'Select Language first' : (value || 'Select Accent')}
         </span>
         <svg 
           className={`w-4 h-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -122,7 +128,7 @@ const CustomAccentDropdown = ({
         </svg>
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute top-full left-0 right-0 z-50 bg-white border border-[#D6DEE6] rounded-lg shadow-lg mt-1 overflow-hidden">
           {/* Прокручиваемая область со списком акцентов */}
           <div className="max-h-48 overflow-y-auto">
@@ -575,6 +581,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                     <CustomAccentDropdown
                       value={config.accent}
                       onChange={(value) => handleInputChange("accent", value)}
+                      disabled={!config.language}
                     />
                   </FormField>
                 </div>
