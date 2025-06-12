@@ -516,7 +516,7 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                   />
                 </FormField>
 
-                {/* Name and Language Row */}
+                {/* Name and Gender Row */}
                 <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
                   <FormField label="Name" className="flex-1">
                     <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
@@ -532,6 +532,26 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                     </div>
                   </FormField>
                   
+                  <FormField label="Gender" className="flex-1">
+                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
+                      <select
+                        value={config.gender}
+                        onChange={(e) => handleInputChange("gender", e.target.value)}
+                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
+                          config.gender ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
+                        }`}
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Non-binary">Non-binary</option>
+                      </select>
+                    </div>
+                  </FormField>
+                </div>
+
+                {/* Language and Accent Row */}
+                <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
                   <FormField label="Language" className="flex-1">
                     <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
                       <select
@@ -550,32 +570,12 @@ export const VoiceConfigModal = React.forwardRef<HTMLDivElement, VoiceConfigModa
                       </select>
                     </div>
                   </FormField>
-                </div>
-
-                {/* Accent and Gender Row */}
-                <div className="flex h-[66px] items-start gap-6 self-stretch relative max-md:flex-col max-md:h-auto max-md:gap-3 max-sm:gap-4">
+                  
                   <FormField label="Accent" className="flex-1">
                     <CustomAccentDropdown
                       value={config.accent}
                       onChange={(value) => handleInputChange("accent", value)}
                     />
-                  </FormField>
-                  
-                  <FormField label="Gender" className="flex-1">
-                    <div className="flex h-10 items-center gap-2 self-stretch border relative bg-white p-2 rounded-lg border-solid border-[#D6DEE6]">
-                      <select
-                        value={config.gender}
-                        onChange={(e) => handleInputChange("gender", e.target.value)}
-                        className={`flex-[1_0_0] text-[15px] font-normal leading-[22.5px] bg-transparent border-none outline-none ${
-                          config.gender ? 'text-[#252B2F]' : 'text-[#9CAEC7]'
-                        }`}
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="Female">Female</option>
-                        <option value="Male">Male</option>
-                        <option value="Non-binary">Non-binary</option>
-                      </select>
-                    </div>
                   </FormField>
                 </div>
               </FormSection>
