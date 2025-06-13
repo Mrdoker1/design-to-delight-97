@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TabNavigation } from './TabNavigation';
 import { ChapterRow } from './ChapterRow';
 
 export const CourseStatistics: React.FC = () => {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set()
+  );
+
   const handleExport = () => {
     console.log('Exporting to Excel...');
     // Implementation for Excel export would go here
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -48,8 +64,8 @@ export const CourseStatistics: React.FC = () => {
             exercises={41}
             completion={12}
             hasChildren={true}
-            isExpanded={true}
-            isHighlighted={true}
+            isExpanded={expandedSections.has('2-greetings')}
+            onToggle={() => toggleSection('2-greetings')}
           >
             <div className="flex flex-col items-start w-full border-b-2 border-b-[#D6DEE6] border-solid">
               <ChapterRow
@@ -66,28 +82,28 @@ export const CourseStatistics: React.FC = () => {
                 completion={13}
                 level={1}
               />
-              <ChapterRow
-                title="3 Asking how somebody is"
-                lessons={6}
-                exercises={6}
-                completion={45}
-                level={1}
-                hasChildren={true}
-                isExpanded={true}
-                isHighlighted={true}
-                hasExternalLink={true}
-              >
+                             <ChapterRow
+                 title="3 Asking how somebody is"
+                 lessons={6}
+                 exercises={6}
+                 completion={45}
+                 level={1}
+                 hasChildren={true}
+                 isExpanded={expandedSections.has('3-asking-how-somebody-is')}
+                 hasExternalLink={true}
+                 onToggle={() => toggleSection('3-asking-how-somebody-is')}
+               >
                 <div className="flex w-full flex-col items-start gap-2 border-b-[3px] border-b-[#D6DEE6] border-solid">
-                  <ChapterRow
-                    title="Vocabulary"
-                    lessons={1}
-                    exercises={6}
-                    completion={13}
-                    level={2}
-                    hasChildren={true}
-                    isExpanded={true}
-                    isHighlighted={true}
-                  >
+                                     <ChapterRow
+                     title="Vocabulary"
+                     lessons={1}
+                     exercises={6}
+                     completion={13}
+                     level={2}
+                     hasChildren={true}
+                     isExpanded={expandedSections.has('vocabulary')}
+                     onToggle={() => toggleSection('vocabulary')}
+                   >
                     <ChapterRow
                       title="1 Flashcard"
                       lessons={0}

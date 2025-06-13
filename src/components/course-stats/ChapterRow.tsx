@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ProgressBar } from './ProgressBar';
 
 interface ChapterRowProps {
@@ -11,7 +11,7 @@ interface ChapterRowProps {
   children?: React.ReactNode;
   level?: number;
   hasExternalLink?: boolean;
-  isHighlighted?: boolean;
+  onToggle?: () => void;
 }
 
 export const ChapterRow: React.FC<ChapterRowProps> = ({
@@ -19,18 +19,16 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
   lessons,
   exercises,
   completion,
-  isExpanded: initialExpanded = false,
+  isExpanded = false,
   hasChildren = false,
   children,
   level = 0,
   hasExternalLink = false,
-  isHighlighted = false
+  onToggle
 }) => {
-  const [isExpanded, setIsExpanded] = useState(initialExpanded);
-
   const toggleExpanded = () => {
-    if (hasChildren) {
-      setIsExpanded(!isExpanded);
+    if (hasChildren && onToggle) {
+      onToggle();
     }
   };
 
@@ -40,7 +38,7 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
     <>
       <div 
         className={`flex items-center gap-6 w-full p-2 max-md:flex-col max-md:gap-2 max-md:items-start ${
-          isHighlighted ? 'bg-[#EBEFF5]' : level > 0 ? 'bg-white' : 'shadow-[0px_1px_0px_0px_#D6DEE6_inset] bg-white'
+          (isExpanded && hasChildren) ? 'bg-[#EBEFF5]' : level > 0 ? 'bg-white' : 'shadow-[0px_1px_0px_0px_#D6DEE6_inset] bg-white'
         }`}
       >
         <div className="w-[480px] shrink-0 max-md:w-full">
