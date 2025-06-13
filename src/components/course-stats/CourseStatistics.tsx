@@ -52,107 +52,115 @@ export const CourseStatistics: React.FC = () => {
             isHighlighted={true}
           >
             <div className="flex flex-col items-start w-full border-b-2 border-b-[#D6DEE6] border-solid">
-              <div className="flex flex-col items-start w-full box-border px-6 py-0">
-                <ChapterRow
-                  title="1 Saying how you are"
-                  lessons={1}
-                  exercises={7}
-                  completion={13}
-                  level={1}
-                />
-                <ChapterRow
-                  title="2 Referring to a person"
-                  lessons={6}
-                  exercises={5}
-                  completion={13}
-                  level={1}
-                />
-                <ChapterRow
-                  title="3 Asking how somebody is"
-                  lessons={6}
-                  exercises={6}
-                  completion={45}
-                  level={1}
-                  hasChildren={true}
-                  isExpanded={true}
-                  isHighlighted={true}
-                  hasExternalLink={true}
-                >
-                  <div className="flex flex-col items-start w-full box-border px-6 py-0">
-                    <div className="flex w-full flex-col items-start gap-2 border-b-[3px] border-b-[#D6DEE6] border-solid">
-                      <ChapterRow
-                        title="Vocabulary"
-                        lessons={1}
-                        exercises={6}
-                        completion={13}
-                        level={2}
-                        hasChildren={true}
-                        isExpanded={true}
-                        isHighlighted={true}
-                      >
-                        <div className="flex flex-col items-start w-full box-border px-6 py-0">
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              1 Flashcard
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              2 Fillgap
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              Phrase builder Audio
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              3 Flashcard
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              4 True or False Image &amp; Audio
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              5 Fillgap
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-6 w-full p-2">
-                            <div className="flex-[1_0_0] text-[#1E2D40] text-base font-normal leading-6 w-[432px] gap-4 pr-[27px]">
-                              6 Matchup
-                            </div>
-                          </div>
-                        </div>
-                      </ChapterRow>
-                    </div>
-                  </div>
-                </ChapterRow>
-                <ChapterRow
-                  title="4 Speaking - Speaking about yourself"
-                  lessons={1}
-                  exercises={9}
-                  completion={56}
-                  level={1}
-                />
-                <ChapterRow
-                  title="5 Developing fluency"
-                  lessons={1}
-                  exercises={6}
-                  completion={72}
-                  level={1}
-                />
-                <ChapterRow
-                  title="Checkpoint # 1"
-                  lessons={1}
-                  exercises={8}
-                  completion={93}
-                  level={1}
-                />
-              </div>
+              <ChapterRow
+                title="1 Saying how you are"
+                lessons={1}
+                exercises={7}
+                completion={13}
+                level={1}
+              />
+              <ChapterRow
+                title="2 Referring to a person"
+                lessons={6}
+                exercises={5}
+                completion={13}
+                level={1}
+              />
+              <ChapterRow
+                title="3 Asking how somebody is"
+                lessons={6}
+                exercises={6}
+                completion={45}
+                level={1}
+                hasChildren={true}
+                isExpanded={true}
+                isHighlighted={true}
+                hasExternalLink={true}
+              >
+                <div className="flex w-full flex-col items-start gap-2 border-b-[3px] border-b-[#D6DEE6] border-solid">
+                  <ChapterRow
+                    title="Vocabulary"
+                    lessons={1}
+                    exercises={6}
+                    completion={13}
+                    level={2}
+                    hasChildren={true}
+                    isExpanded={true}
+                    isHighlighted={true}
+                  >
+                    <ChapterRow
+                      title="1 Flashcard"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                    <ChapterRow
+                      title="2 Fillgap"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                    <ChapterRow
+                      title="Phrase builder Audio"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                    <ChapterRow
+                      title="3 Flashcard"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                    <ChapterRow
+                      title="4 True or False Image & Audio"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                    <ChapterRow
+                      title="5 Fillgap"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                    <ChapterRow
+                      title="6 Matchup"
+                      lessons={0}
+                      exercises={0}
+                      completion={0}
+                      level={3}
+                    />
+                  </ChapterRow>
+                </div>
+              </ChapterRow>
+              <ChapterRow
+                title="4 Speaking - Speaking about yourself"
+                lessons={1}
+                exercises={9}
+                completion={56}
+                level={1}
+              />
+              <ChapterRow
+                title="5 Developing fluency"
+                lessons={1}
+                exercises={6}
+                completion={72}
+                level={1}
+              />
+              <ChapterRow
+                title="Checkpoint # 1"
+                lessons={1}
+                exercises={8}
+                completion={93}
+                level={1}
+              />
             </div>
           </ChapterRow>
           
