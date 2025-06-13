@@ -90,7 +90,6 @@ export const CourseStatistics: React.FC = () => {
                  level={1}
                  hasChildren={true}
                  isExpanded={expandedSections.has('3-asking-how-somebody-is')}
-                 hasExternalLink={true}
                  onToggle={() => toggleSection('3-asking-how-somebody-is')}
                >
                 <div className="flex w-full flex-col items-start gap-2 border-b-[3px] border-b-[#D6DEE6] border-solid">
