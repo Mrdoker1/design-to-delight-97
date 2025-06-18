@@ -6,6 +6,7 @@ export const CourseStatistics: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
+  const [showMoreChapters, setShowMoreChapters] = useState(false);
 
   const handleExport = () => {
     console.log('Exporting to Excel...');
@@ -22,6 +23,10 @@ export const CourseStatistics: React.FC = () => {
       }
       return newSet;
     });
+  };
+
+  const handleShowMore = () => {
+    setShowMoreChapters(!showMoreChapters);
   };
 
   return (
@@ -202,9 +207,56 @@ export const CourseStatistics: React.FC = () => {
             completion={92}
             hasChildren={false}
           />
+
+          {showMoreChapters && (
+            <>
+              <ChapterRow
+                title="6 - Food and drinks"
+                lessons={8}
+                exercises={54}
+                completion={78}
+                hasChildren={false}
+              />
+              
+              <ChapterRow
+                title="7 - Daily routines"
+                lessons={10}
+                exercises={67}
+                completion={45}
+                hasChildren={false}
+              />
+              
+              <ChapterRow
+                title="8 - Travel and transport"
+                lessons={12}
+                exercises={89}
+                completion={23}
+                hasChildren={false}
+              />
+              
+              <ChapterRow
+                title="9 - Shopping"
+                lessons={7}
+                exercises={41}
+                completion={91}
+                hasChildren={false}
+              />
+              
+              <ChapterRow
+                title="10 - Weather and seasons"
+                lessons={6}
+                exercises={38}
+                completion={67}
+                hasChildren={false}
+              />
+            </>
+          )}
           
-          <button className="text-[#116EEE] text-base font-bold leading-6 gap-6 w-full shadow-[0px_1px_0px_0px_#D6DEE6_inset,0px_1px_0px_0px_#D6DEE6] bg-white p-2 hover:bg-[#F8F9FA] transition-colors">
-            Show more
+          <button 
+            onClick={handleShowMore}
+            className="text-[#116EEE] text-base font-bold leading-6 gap-6 w-full shadow-[0px_1px_0px_0px_#D6DEE6_inset,0px_1px_0px_0px_#D6DEE6] bg-white p-2 hover:bg-[#F8F9FA] transition-colors"
+          >
+            {showMoreChapters ? 'Show less' : 'Show more'}
           </button>
         </div>
       </div>
