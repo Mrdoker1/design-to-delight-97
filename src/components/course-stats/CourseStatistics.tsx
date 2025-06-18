@@ -39,7 +39,7 @@ export const CourseStatistics: React.FC = () => {
       <TabNavigation onExport={handleExport} />
       
       <div 
-        className="flex flex-col items-start gap-2 w-full box-border px-6 py-0 max-md:px-4 max-md:py-0"
+        className="flex flex-col items-start w-full box-border px-6 py-0 max-md:px-4 max-md:py-0"
         role="tabpanel"
         id="chapter-panel"
         aria-labelledby="chapter-tab"
@@ -74,7 +74,7 @@ export const CourseStatistics: React.FC = () => {
             onClick={handleShowMore}
             className="text-[#116EEE] text-base font-bold leading-6 gap-6 w-full shadow-[0px_1px_0px_0px_#D6DEE6_inset,0px_1px_0px_0px_#D6DEE6] bg-white p-2 hover:bg-[#F8F9FA] transition-colors"
           >
-            {showMoreChapters ? 'Show less' : 'Show more'}
+            {showMoreChapters ? 'Show more' : 'Show less'}
           </button>
         </div>
       </div>

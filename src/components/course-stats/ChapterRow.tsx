@@ -11,6 +11,7 @@ interface ChapterRowProps {
   children?: React.ReactNode;
   level?: number;
   onToggle?: () => void;
+  isFirstChild?: boolean;
 }
 
 export const ChapterRow: React.FC<ChapterRowProps> = ({
@@ -22,7 +23,8 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
   hasChildren = false,
   children,
   level = 0,
-  onToggle
+  onToggle,
+  isFirstChild = false
 }) => {
   const toggleExpanded = () => {
     if (hasChildren && onToggle) {
@@ -32,14 +34,24 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
 
   const titlePaddingLeft = level * 20;
 
+  // Определяем классы отступов
+  let marginClasses = '';
+  if (level > 0) {
+    if (isFirstChild) {
+      marginClasses = 'mt-1.5'; // Отступ сверху 6px для отделения от родителя 
+    }
+    // Добавляем общий отступ снизу для всех дочерних элементов  
+    marginClasses += marginClasses ? ' mb-0.75' : 'mb-0.75'; // 3px снизу (будет 3px отступ между элементами)
+  }
+
   return (
     <>
       <div 
-        className="w-full relative group"
+        className={`w-full relative group ${marginClasses}`}
         onClick={hasChildren ? toggleExpanded : undefined}
       >
         <div 
-          className={`absolute inset-0 transition-colors ${hasChildren ? 'cursor-pointer' : 'cursor-default'} ${
+          className={`absolute inset-0 transition-colors cursor-pointer ${
             (isExpanded && hasChildren) ? 'bg-[#EBEFF5] group-hover:bg-[#EBEFF5]' : level > 0 ? 'bg-white group-hover:bg-[#F8F9FA]' : 'shadow-[0px_1px_0px_0px_#D6DEE6_inset] bg-white group-hover:bg-[#F8F9FA]'
           }`}
           style={{ 
@@ -55,7 +67,7 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
               className="flex items-center gap-2.5"
               style={{ paddingLeft: `${titlePaddingLeft}px` }}
             >
-              <span className={`text-[#1E2D40] text-base leading-6 ${level === 0 ? 'font-normal' : 'font-bold'}`}>
+              <span className={`text-[#1E2D40] text-base leading-6 ${(isExpanded && hasChildren) ? 'font-bold' : 'font-normal'}`}>
                 {title}
               </span>
               <svg 
@@ -89,16 +101,21 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
             )}
           </div>
           {hasChildren && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer">
               <svg 
                 width="14" 
                 height="8" 
                 viewBox="0 0 14 8" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
-                className={`w-3 h-2 flex-shrink-0 ${isExpanded ? 'fill-[#083572]' : 'fill-[#9CAEC7]'} transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                className={`w-3 h-2 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
               >
-                <path fillRule="evenodd" clipRule="evenodd" d="M1.16466 0.432633C1.52386 0.109356 2.07711 0.138475 2.40039 0.497671L7.00001 5.60836L11.5996 0.497674C11.9229 0.138477 12.4762 0.109359 12.8354 0.432636C13.1946 0.755913 13.2237 1.30917 12.9004 1.66836L7.65039 7.5017C7.48445 7.68607 7.24806 7.79135 7.00001 7.79135C6.75196 7.79135 6.51556 7.68607 6.34963 7.5017L1.09963 1.66836C0.776349 1.30916 0.805467 0.75591 1.16466 0.432633Z" fill="currentColor"/>
+                <path 
+                  fillRule="evenodd" 
+                  clipRule="evenodd" 
+                  d="M1.16466 0.432633C1.52386 0.109356 2.07711 0.138475 2.40039 0.497671L7.00001 5.60836L11.5996 0.497674C11.9229 0.138477 12.4762 0.109359 12.8354 0.432636C13.1946 0.755913 13.2237 1.30917 12.9004 1.66836L7.65039 7.5017C7.48445 7.68607 7.24806 7.79135 7.00001 7.79135C6.75196 7.79135 6.51556 7.68607 6.34963 7.5017L1.09963 1.66836C0.776349 1.30916 0.805467 0.75591 1.16466 0.432633Z" 
+                  fill={isExpanded ? '#083572' : '#9CAEC7'}
+                />
               </svg>
             </div>
           )}

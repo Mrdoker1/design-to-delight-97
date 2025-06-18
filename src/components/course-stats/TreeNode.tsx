@@ -7,13 +7,15 @@ interface TreeNodeProps {
   level?: number;
   expandedSections: Set<string>;
   onToggle: (sectionId: string) => void;
+  isFirstChild?: boolean;
 }
 
 export const TreeNode: React.FC<TreeNodeProps> = ({ 
   node, 
   level = 0, 
   expandedSections, 
-  onToggle 
+  onToggle,
+  isFirstChild = false
 }) => {
   const isExpanded = expandedSections.has(node.id);
 
@@ -26,17 +28,19 @@ export const TreeNode: React.FC<TreeNodeProps> = ({
       level={level}
       hasChildren={node.hasChildren}
       isExpanded={isExpanded}
+      isFirstChild={isFirstChild}
       onToggle={node.hasChildren ? () => onToggle(node.id) : undefined}
     >
       {isExpanded && node.children && (
         <>
-          {node.children.map((child) => (
+          {node.children.map((child, index) => (
             <TreeNode
               key={child.id}
               node={child}
               level={level + 1}
               expandedSections={expandedSections}
               onToggle={onToggle}
+              isFirstChild={index === 0}
             />
           ))}
         </>
