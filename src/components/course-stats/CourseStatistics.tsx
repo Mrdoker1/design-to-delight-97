@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { TabNavigation } from './TabNavigation';
-import { TreeNode } from './TreeNode';
-import { courseData, additionalChapters } from '../../data/courseData';
+import { CourseSection } from './CourseSection';
+import { courseData } from '../../data/courseData';
+import { elementaryA2Data } from '../../data/elementaryA2Data';
+import { intermediateB1Data } from '../../data/intermediateB1Data';
 
 export const CourseStatistics: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
-  const [showMoreChapters, setShowMoreChapters] = useState(false);
+  const [showMoreBeginnerA1, setShowMoreBeginnerA1] = useState(false);
+  const [showMoreElementaryA2, setShowMoreElementaryA2] = useState(false);
+  const [showMoreIntermediateB1, setShowMoreIntermediateB1] = useState(false);
 
   const handleExport = () => {
     console.log('Exporting to Excel...');
@@ -26,13 +30,17 @@ export const CourseStatistics: React.FC = () => {
     });
   };
 
-  const handleShowMore = () => {
-    setShowMoreChapters(!showMoreChapters);
+  const handleShowMoreBeginnerA1 = () => {
+    setShowMoreBeginnerA1(!showMoreBeginnerA1);
   };
 
-  const allChapters = showMoreChapters 
-    ? [...courseData, ...additionalChapters] 
-    : courseData;
+  const handleShowMoreElementaryA2 = () => {
+    setShowMoreElementaryA2(!showMoreElementaryA2);
+  };
+
+  const handleShowMoreIntermediateB1 = () => {
+    setShowMoreIntermediateB1(!showMoreIntermediateB1);
+  };
 
   return (
     <section className="flex flex-col items-end gap-6 w-full border rounded-lg border-solid border-[#DAE1EA]">
@@ -44,38 +52,41 @@ export const CourseStatistics: React.FC = () => {
         id="chapter-panel"
         aria-labelledby="chapter-tab"
       >
-        <div className="flex items-start gap-6 w-full p-2 max-md:flex-col max-md:gap-2">
-          <div className="w-[480px] text-[#1E2D40] text-sm font-bold leading-[21px] max-md:w-full">
-            Beginner A1
-          </div>
-          <div className="w-[200px] text-[#1E2D40] text-sm font-bold leading-[21px] max-md:w-full">
-            Lessons
-          </div>
-          <div className="w-[200px] text-[#1E2D40] text-sm font-bold leading-[21px] max-md:w-full">
-            Exercises
-          </div>
-          <div className="w-[200px] text-[#1E2D40] text-sm font-bold leading-[21px] max-md:w-full">
-            Completion %
-          </div>
+        {/* Beginner A1 Section */}
+        <CourseSection
+          title="Beginner A1"
+          data={courseData}
+          initialItemsCount={3}
+          expandedSections={expandedSections}
+          onToggle={toggleSection}
+          showMore={showMoreBeginnerA1}
+          onShowMoreToggle={handleShowMoreBeginnerA1}
+        />
+
+        {/* Elementary A2 Section */}
+        <div className="mt-8 w-full">
+          <CourseSection
+            title="Elementary A2"
+            data={elementaryA2Data}
+            initialItemsCount={3}
+            expandedSections={expandedSections}
+            onToggle={toggleSection}
+            showMore={showMoreElementaryA2}
+            onShowMoreToggle={handleShowMoreElementaryA2}
+          />
         </div>
-        
-        <div className="flex flex-col items-start w-full">
-          {allChapters.map((chapter) => (
-            <TreeNode
-              key={chapter.id}
-              node={chapter}
-              level={0}
-              expandedSections={expandedSections}
-              onToggle={toggleSection}
-            />
-          ))}
-          
-          <button 
-            onClick={handleShowMore}
-            className="text-[#116EEE] text-base font-bold leading-6 gap-6 w-full shadow-[0px_1px_0px_0px_#D6DEE6_inset,0px_1px_0px_0px_#D6DEE6] bg-white p-2 hover:bg-[#F8F9FA] transition-colors"
-          >
-            {showMoreChapters ? 'Show more' : 'Show less'}
-          </button>
+
+        {/* Intermediate B1 Section */}
+        <div className="mt-8 w-full">
+          <CourseSection
+            title="Intermediate B1"
+            data={intermediateB1Data}
+            initialItemsCount={3}
+            expandedSections={expandedSections}
+            onToggle={toggleSection}
+            showMore={showMoreIntermediateB1}
+            onShowMoreToggle={handleShowMoreIntermediateB1}
+          />
         </div>
       </div>
     </section>
