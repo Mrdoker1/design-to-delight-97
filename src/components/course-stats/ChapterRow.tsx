@@ -35,9 +35,10 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
   return (
     <>
       <div 
-        className={`group flex items-center gap-6 w-full p-2 max-md:flex-col max-md:gap-2 max-md:items-start transition-colors hover:bg-[#F8F9FA] cursor-pointer ${
+        className={`group flex items-center gap-6 w-full p-2 max-md:flex-col max-md:gap-2 max-md:items-start transition-colors hover:bg-[#F8F9FA] ${hasChildren ? 'cursor-pointer' : 'cursor-default'} ${
           (isExpanded && hasChildren) ? 'bg-[#EBEFF5]' : level > 0 ? 'bg-white' : 'shadow-[0px_1px_0px_0px_#D6DEE6_inset] bg-white'
         }`}
+        onClick={hasChildren ? toggleExpanded : undefined}
       >
         <div className="w-[480px] shrink-0 max-md:w-full">
           <div 
@@ -78,9 +79,8 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
           )}
         </div>
         {hasChildren && (
-          <button
-            className="w-3.5 h-3.5 relative"
-            onClick={toggleExpanded}
+          <div
+            className="w-3.5 h-3.5 relative pointer-events-none"
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${title}`}
           >
@@ -94,7 +94,7 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
             >
               <path fillRule="evenodd" clipRule="evenodd" d="M1.16466 0.432633C1.52386 0.109356 2.07711 0.138475 2.40039 0.497671L7.00001 5.60836L11.5996 0.497674C11.9229 0.138477 12.4762 0.109359 12.8354 0.432636C13.1946 0.755913 13.2237 1.30917 12.9004 1.66836L7.65039 7.5017C7.48445 7.68607 7.24806 7.79135 7.00001 7.79135C6.75196 7.79135 6.51556 7.68607 6.34963 7.5017L1.09963 1.66836C0.776349 1.30916 0.805467 0.75591 1.16466 0.432633Z" fill="currentColor"/>
             </svg>
-          </button>
+          </div>
         )}
       </div>
       {isExpanded && children && (
