@@ -61,6 +61,7 @@ export const CourseStatistics: React.FC = () => {
           onToggle={toggleSection}
           showMore={showMoreBeginnerA1}
           onShowMoreToggle={handleShowMoreBeginnerA1}
+          stickyTop={0}
         />
 
         {/* Elementary A2 Section */}
@@ -73,6 +74,7 @@ export const CourseStatistics: React.FC = () => {
             onToggle={toggleSection}
             showMore={showMoreElementaryA2}
             onShowMoreToggle={handleShowMoreElementaryA2}
+            stickyTop={0}
           />
         </div>
 
@@ -86,6 +88,7 @@ export const CourseStatistics: React.FC = () => {
             onToggle={toggleSection}
             showMore={showMoreIntermediateB1}
             onShowMoreToggle={handleShowMoreIntermediateB1}
+            stickyTop={0}
           />
         </div>
       </div>

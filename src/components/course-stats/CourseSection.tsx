@@ -10,6 +10,7 @@ interface CourseSectionProps {
   onToggle: (sectionId: string) => void;
   showMore?: boolean;
   onShowMoreToggle?: () => void;
+  stickyTop?: number; // Позиция для sticky заголовка
 }
 
 export const CourseSection: React.FC<CourseSectionProps> = ({
@@ -19,7 +20,8 @@ export const CourseSection: React.FC<CourseSectionProps> = ({
   expandedSections,
   onToggle,
   showMore = false,
-  onShowMoreToggle
+  onShowMoreToggle,
+  stickyTop = 0
 }) => {
   const visibleChapters = showMore ? data : data.slice(0, initialItemsCount);
   const hasMoreItems = data.length > initialItemsCount;
@@ -27,7 +29,10 @@ export const CourseSection: React.FC<CourseSectionProps> = ({
   return (
     <div className="w-full">
       {/* Заголовок секции */}
-      <div className="flex items-start gap-6 w-full p-2 max-md:flex-col max-md:gap-2">
+      <div 
+        className="sticky z-10 bg-white border-b border-[#DAE1EA] flex items-center gap-6 w-full py-4 px-2 max-md:flex-col max-md:gap-2"
+        style={{ top: `${stickyTop}px` }}
+      >
         <div className="w-[480px] text-[#1E2D40] text-sm font-bold leading-[21px] max-md:w-full">
           {title}
         </div>
