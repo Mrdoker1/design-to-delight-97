@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TabNavigation } from './TabNavigation';
-import { ChapterRow } from './ChapterRow';
+import { TreeNode } from './TreeNode';
+import { courseData, additionalChapters } from '../../data/courseData';
 
 export const CourseStatistics: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -29,6 +30,10 @@ export const CourseStatistics: React.FC = () => {
     setShowMoreChapters(!showMoreChapters);
   };
 
+  const allChapters = showMoreChapters 
+    ? [...courseData, ...additionalChapters] 
+    : courseData;
+
   return (
     <section className="flex flex-col items-end gap-6 w-full border rounded-lg border-solid border-[#DAE1EA]">
       <TabNavigation onExport={handleExport} />
@@ -55,202 +60,15 @@ export const CourseStatistics: React.FC = () => {
         </div>
         
         <div className="flex flex-col items-start w-full">
-          <ChapterRow
-            title="1 - Introductions"
-            lessons={7}
-            exercises={62}
-            completion={72}
-            hasChildren={false}
-          />
-          
-          <ChapterRow
-            title="2 - Greetings"
-            lessons={6}
-            exercises={41}
-            completion={12}
-            hasChildren={true}
-            isExpanded={expandedSections.has('2-greetings')}
-            onToggle={() => toggleSection('2-greetings')}
-          >
-            <div className="flex flex-col items-start w-full border-b-2 border-b-[#D6DEE6] border-solid">
-              <ChapterRow
-                title="1 Saying how you are"
-                lessons={1}
-                exercises={7}
-                completion={13}
-                level={1}
-              />
-              <ChapterRow
-                title="2 Referring to a person"
-                lessons={6}
-                exercises={5}
-                completion={13}
-                level={1}
-              />
-                             <ChapterRow
-                 title="3 Asking how somebody is"
-                 lessons={6}
-                 exercises={6}
-                 completion={45}
-                 level={1}
-                 hasChildren={true}
-                 isExpanded={expandedSections.has('3-asking-how-somebody-is')}
-                 onToggle={() => toggleSection('3-asking-how-somebody-is')}
-               >
-                <div className="flex w-full flex-col items-start gap-2 border-b-[3px] border-b-[#D6DEE6] border-solid">
-                                     <ChapterRow
-                     title="Vocabulary"
-                     lessons={1}
-                     exercises={6}
-                     completion={13}
-                     level={2}
-                     hasChildren={true}
-                     isExpanded={expandedSections.has('vocabulary')}
-                     onToggle={() => toggleSection('vocabulary')}
-                   >
-                    <ChapterRow
-                      title="1 Flashcard"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                    <ChapterRow
-                      title="2 Fillgap"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                    <ChapterRow
-                      title="Phrase builder Audio"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                    <ChapterRow
-                      title="3 Flashcard"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                    <ChapterRow
-                      title="4 True or False Image & Audio"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                    <ChapterRow
-                      title="5 Fillgap"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                    <ChapterRow
-                      title="6 Matchup"
-                      lessons={0}
-                      exercises={0}
-                      completion={0}
-                      level={3}
-                    />
-                  </ChapterRow>
-                </div>
-              </ChapterRow>
-              <ChapterRow
-                title="4 Speaking - Speaking about yourself"
-                lessons={1}
-                exercises={9}
-                completion={56}
-                level={1}
-              />
-              <ChapterRow
-                title="5 Developing fluency"
-                lessons={1}
-                exercises={6}
-                completion={72}
-                level={1}
-              />
-              <ChapterRow
-                title="Checkpoint # 1"
-                lessons={1}
-                exercises={8}
-                completion={93}
-                level={1}
-              />
-            </div>
-          </ChapterRow>
-          
-          <ChapterRow
-            title="3 - All about me"
-            lessons={11}
-            exercises={57}
-            completion={54}
-            hasChildren={false}
-          />
-          
-          <ChapterRow
-            title="4 - People and things"
-            lessons={7}
-            exercises={68}
-            completion={12}
-            hasChildren={false}
-          />
-          
-          <ChapterRow
-            title="5 - Languages"
-            lessons={9}
-            exercises={45}
-            completion={92}
-            hasChildren={false}
-          />
-
-          {showMoreChapters && (
-            <>
-              <ChapterRow
-                title="6 - Food and drinks"
-                lessons={8}
-                exercises={54}
-                completion={78}
-                hasChildren={false}
-              />
-              
-              <ChapterRow
-                title="7 - Daily routines"
-                lessons={10}
-                exercises={67}
-                completion={45}
-                hasChildren={false}
-              />
-              
-              <ChapterRow
-                title="8 - Travel and transport"
-                lessons={12}
-                exercises={89}
-                completion={23}
-                hasChildren={false}
-              />
-              
-              <ChapterRow
-                title="9 - Shopping"
-                lessons={7}
-                exercises={41}
-                completion={91}
-                hasChildren={false}
-              />
-              
-              <ChapterRow
-                title="10 - Weather and seasons"
-                lessons={6}
-                exercises={38}
-                completion={67}
-                hasChildren={false}
-              />
-            </>
-          )}
+          {allChapters.map((chapter) => (
+            <TreeNode
+              key={chapter.id}
+              node={chapter}
+              level={0}
+              expandedSections={expandedSections}
+              onToggle={toggleSection}
+            />
+          ))}
           
           <button 
             onClick={handleShowMore}
