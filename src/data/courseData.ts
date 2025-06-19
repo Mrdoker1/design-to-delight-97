@@ -14,23 +14,23 @@ export const courseData: CourseNode[] = [
     id: 'chapter-1',
     title: '1 - Introductions',
     lessons: 7,
-    exercises: 62,
+    exercises: 14,
     completion: 72,
     hasChildren: true,
     children: [
       {
         id: 'lesson-1-1',
         title: '1 Personal pronouns',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 4,
         completion: 85,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-1-1',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 8,
+            lessons: 0,
+            exercises: 4,
             completion: 85,
             hasChildren: true,
             children: [
@@ -45,16 +45,16 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-1-2',
         title: '2 Basic greetings',
-        lessons: 1,
-        exercises: 9,
+        lessons: 0,
+        exercises: 5,
         completion: 67,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-1-2',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 6,
+            lessons: 0,
+            exercises: 3,
             completion: 67,
             hasChildren: true,
             children: [
@@ -67,7 +67,7 @@ export const courseData: CourseNode[] = [
             id: 'grammar-1-2',
             title: 'Grammar',
             lessons: 0,
-            exercises: 3,
+            exercises: 2,
             completion: 67,
             hasChildren: true,
             children: [
@@ -80,40 +80,40 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-1-3',
         title: '3 Introducing yourself',
-        lessons: 1,
-        exercises: 12,
+        lessons: 0,
+        exercises: 1,
         completion: 45,
         hasChildren: false
       },
       {
         id: 'lesson-1-4',
         title: '4 Asking for names',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 1,
         completion: 92,
         hasChildren: false
       },
       {
         id: 'lesson-1-5',
         title: '5 Countries and nationalities',
-        lessons: 1,
-        exercises: 15,
+        lessons: 0,
+        exercises: 1,
         completion: 78,
         hasChildren: false
       },
       {
         id: 'lesson-1-6',
         title: '6 Speaking practice',
-        lessons: 1,
-        exercises: 7,
+        lessons: 0,
+        exercises: 1,
         completion: 56,
         hasChildren: false
       },
       {
         id: 'lesson-1-7',
         title: 'Checkpoint #1',
-        lessons: 1,
-        exercises: 5,
+        lessons: 0,
+        exercises: 1,
         completion: 88,
         hasChildren: false
       }
@@ -123,23 +123,23 @@ export const courseData: CourseNode[] = [
     id: 'chapter-2',
     title: '2 - Greetings',
     lessons: 6,
-    exercises: 41,
+    exercises: 15,
     completion: 12,
     hasChildren: true,
     children: [
       {
         id: 'lesson-2-1',
         title: '1 Saying how you are',
-        lessons: 1,
-        exercises: 7,
+        lessons: 0,
+        exercises: 4,
         completion: 13,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-2-1',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 4,
+            lessons: 0,
+            exercises: 2,
             completion: 25,
             hasChildren: true,
             children: [
@@ -151,7 +151,7 @@ export const courseData: CourseNode[] = [
             id: 'speaking-2-1',
             title: 'Speaking',
             lessons: 0,
-            exercises: 3,
+            exercises: 2,
             completion: 5,
             hasChildren: true,
             children: [
@@ -164,16 +164,16 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-2-2',
         title: '2 Referring to a person',
-        lessons: 6,
-        exercises: 5,
+        lessons: 0,
+        exercises: 3,
         completion: 13,
         hasChildren: true,
         children: [
           {
             id: 'grammar-2-2',
             title: 'Grammar',
-            lessons: 6,
-            exercises: 5,
+            lessons: 0,
+            exercises: 3,
             completion: 13,
             hasChildren: true,
             children: [
@@ -187,16 +187,16 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-2-3',
         title: '3 Asking how somebody is',
-        lessons: 6,
-        exercises: 6,
+        lessons: 0,
+        exercises: 7,
         completion: 45,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-2-3',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 6,
+            lessons: 0,
+            exercises: 7,
             completion: 13,
             hasChildren: true,
             children: [
@@ -214,24 +214,24 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-2-4',
         title: '4 Speaking - Speaking about yourself',
-        lessons: 1,
-        exercises: 9,
+        lessons: 0,
+        exercises: 1,
         completion: 56,
         hasChildren: false
       },
       {
         id: 'lesson-2-5',
         title: '5 Developing fluency',
-        lessons: 1,
-        exercises: 6,
+        lessons: 0,
+        exercises: 1,
         completion: 72,
         hasChildren: false
       },
       {
         id: 'lesson-2-6',
         title: 'Checkpoint # 1',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 1,
         completion: 93,
         hasChildren: false
       }
@@ -240,24 +240,24 @@ export const courseData: CourseNode[] = [
   {
     id: 'chapter-3',
     title: '3 - All about me',
-    lessons: 11,
-    exercises: 57,
+    lessons: 8,
+    exercises: 16,
     completion: 54,
     hasChildren: true,
     children: [
       {
         id: 'lesson-3-1',
         title: '1 Age and birthday',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 5,
         completion: 75,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-3-1',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 5,
+            lessons: 0,
+            exercises: 3,
             completion: 80,
             hasChildren: true,
             children: [
@@ -270,7 +270,7 @@ export const courseData: CourseNode[] = [
             id: 'grammar-3-1',
             title: 'Grammar',
             lessons: 0,
-            exercises: 3,
+            exercises: 2,
             completion: 65,
             hasChildren: true,
             children: [
@@ -283,16 +283,16 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-3-2',
         title: '2 Family members',
-        lessons: 2,
-        exercises: 12,
+        lessons: 0,
+        exercises: 5,
         completion: 42,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-3-2',
             title: 'Vocabulary',
-            lessons: 2,
-            exercises: 8,
+            lessons: 0,
+            exercises: 3,
             completion: 50,
             hasChildren: true,
             children: [
@@ -305,7 +305,7 @@ export const courseData: CourseNode[] = [
             id: 'speaking-3-2',
             title: 'Speaking',
             lessons: 0,
-            exercises: 4,
+            exercises: 2,
             completion: 30,
             hasChildren: true,
             children: [
@@ -318,48 +318,48 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-3-3',
         title: '3 Hobbies and interests',
-        lessons: 2,
-        exercises: 10,
+        lessons: 0,
+        exercises: 1,
         completion: 68,
         hasChildren: false
       },
       {
         id: 'lesson-3-4',
         title: '4 Physical appearance',
-        lessons: 1,
-        exercises: 7,
+        lessons: 0,
+        exercises: 1,
         completion: 34,
         hasChildren: false
       },
       {
         id: 'lesson-3-5',
         title: '5 Personality traits',
-        lessons: 1,
-        exercises: 6,
+        lessons: 0,
+        exercises: 1,
         completion: 89,
         hasChildren: false
       },
       {
         id: 'lesson-3-6',
         title: '6 My hometown',
-        lessons: 2,
-        exercises: 8,
+        lessons: 0,
+        exercises: 1,
         completion: 23,
         hasChildren: false
       },
       {
         id: 'lesson-3-7',
         title: '7 Education and work',
-        lessons: 1,
-        exercises: 4,
+        lessons: 0,
+        exercises: 1,
         completion: 76,
         hasChildren: false
       },
       {
         id: 'lesson-3-8',
         title: 'Checkpoint #2',
-        lessons: 1,
-        exercises: 2,
+        lessons: 0,
+        exercises: 1,
         completion: 95,
         hasChildren: false
       }
@@ -369,23 +369,23 @@ export const courseData: CourseNode[] = [
     id: 'chapter-4',
     title: '4 - People and things',
     lessons: 7,
-    exercises: 68,
+    exercises: 11,
     completion: 12,
     hasChildren: true,
     children: [
       {
         id: 'lesson-4-1',
         title: '1 Describing people',
-        lessons: 1,
-        exercises: 12,
+        lessons: 0,
+        exercises: 5,
         completion: 25,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-4-1',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 8,
+            lessons: 0,
+            exercises: 3,
             completion: 30,
             hasChildren: true,
             children: [
@@ -398,7 +398,7 @@ export const courseData: CourseNode[] = [
             id: 'grammar-4-1',
             title: 'Grammar',
             lessons: 0,
-            exercises: 4,
+            exercises: 2,
             completion: 15,
             hasChildren: true,
             children: [
@@ -411,48 +411,48 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-4-2',
         title: '2 Everyday objects',
-        lessons: 1,
-        exercises: 15,
+        lessons: 0,
+        exercises: 1,
         completion: 8,
         hasChildren: false
       },
       {
         id: 'lesson-4-3',
         title: '3 Possession',
-        lessons: 1,
-        exercises: 9,
+        lessons: 0,
+        exercises: 1,
         completion: 0,
         hasChildren: false
       },
       {
         id: 'lesson-4-4',
         title: '4 This, that, these, those',
-        lessons: 1,
-        exercises: 11,
+        lessons: 0,
+        exercises: 1,
         completion: 18,
         hasChildren: false
       },
       {
         id: 'lesson-4-5',
         title: '5 Quantities',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 1,
         completion: 5,
         hasChildren: false
       },
       {
         id: 'lesson-4-6',
         title: '6 Review and practice',
-        lessons: 1,
-        exercises: 10,
+        lessons: 0,
+        exercises: 1,
         completion: 22,
         hasChildren: false
       },
       {
         id: 'lesson-4-7',
         title: 'Checkpoint #3',
-        lessons: 1,
-        exercises: 3,
+        lessons: 0,
+        exercises: 1,
         completion: 45,
         hasChildren: false
       }
@@ -462,23 +462,23 @@ export const courseData: CourseNode[] = [
     id: 'chapter-5',
     title: '5 - Languages',
     lessons: 9,
-    exercises: 45,
+    exercises: 11,
     completion: 92,
     hasChildren: true,
     children: [
       {
         id: 'lesson-5-1',
         title: '1 World languages',
-        lessons: 1,
-        exercises: 6,
+        lessons: 0,
+        exercises: 3,
         completion: 95,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-5-1',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 6,
+            lessons: 0,
+            exercises: 3,
             completion: 95,
             hasChildren: true,
             children: [
@@ -492,63 +492,63 @@ export const courseData: CourseNode[] = [
       {
         id: 'lesson-5-2',
         title: '2 Can you speak...?',
-        lessons: 1,
-        exercises: 5,
+        lessons: 0,
+        exercises: 1,
         completion: 88,
         hasChildren: false
       },
       {
         id: 'lesson-5-3',
         title: '3 Language abilities',
-        lessons: 1,
-        exercises: 7,
+        lessons: 0,
+        exercises: 1,
         completion: 94,
         hasChildren: false
       },
       {
         id: 'lesson-5-4',
         title: '4 Learning languages',
-        lessons: 1,
-        exercises: 4,
+        lessons: 0,
+        exercises: 1,
         completion: 90,
         hasChildren: false
       },
       {
         id: 'lesson-5-5',
         title: '5 Modal verbs: can/can\'t',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 1,
         completion: 85,
         hasChildren: false
       },
       {
         id: 'lesson-5-6',
         title: '6 Pronunciation practice',
-        lessons: 1,
-        exercises: 6,
+        lessons: 0,
+        exercises: 1,
         completion: 92,
         hasChildren: false
       },
       {
         id: 'lesson-5-7',
         title: '7 Cultural awareness',
-        lessons: 1,
-        exercises: 5,
+        lessons: 0,
+        exercises: 1,
         completion: 96,
         hasChildren: false
       },
       {
         id: 'lesson-5-8',
         title: '8 Speaking fluency',
-        lessons: 1,
-        exercises: 3,
+        lessons: 0,
+        exercises: 1,
         completion: 88,
         hasChildren: false
       },
       {
         id: 'lesson-5-9',
         title: 'Checkpoint #4',
-        lessons: 1,
+        lessons: 0,
         exercises: 1,
         completion: 100,
         hasChildren: false
@@ -562,23 +562,23 @@ export const additionalChapters: CourseNode[] = [
     id: 'chapter-6',
     title: '6 - Food and drinks',
     lessons: 8,
-    exercises: 54,
+    exercises: 12,
     completion: 78,
     hasChildren: true,
     children: [
       {
         id: 'lesson-6-1',
         title: '1 Meals of the day',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 5,
         completion: 85,
         hasChildren: true,
         children: [
           {
             id: 'vocabulary-6-1',
             title: 'Vocabulary',
-            lessons: 1,
-            exercises: 5,
+            lessons: 0,
+            exercises: 3,
             completion: 90,
             hasChildren: true,
             children: [
@@ -591,7 +591,7 @@ export const additionalChapters: CourseNode[] = [
             id: 'listening-6-1',
             title: 'Listening',
             lessons: 0,
-            exercises: 3,
+            exercises: 2,
             completion: 75,
             hasChildren: true,
             children: [
@@ -604,56 +604,56 @@ export const additionalChapters: CourseNode[] = [
       {
         id: 'lesson-6-2',
         title: '2 At the restaurant',
-        lessons: 1,
-        exercises: 7,
+        lessons: 0,
+        exercises: 1,
         completion: 72,
         hasChildren: false
       },
       {
         id: 'lesson-6-3',
         title: '3 Cooking verbs',
-        lessons: 1,
-        exercises: 6,
+        lessons: 0,
+        exercises: 1,
         completion: 68,
         hasChildren: false
       },
       {
         id: 'lesson-6-4',
         title: '4 Drinks and beverages',
-        lessons: 1,
-        exercises: 5,
+        lessons: 0,
+        exercises: 1,
         completion: 92,
         hasChildren: false
       },
       {
         id: 'lesson-6-5',
         title: '5 Food preferences',
-        lessons: 1,
-        exercises: 8,
+        lessons: 0,
+        exercises: 1,
         completion: 74,
         hasChildren: false
       },
       {
         id: 'lesson-6-6',
         title: '6 Shopping for food',
-        lessons: 1,
-        exercises: 9,
+        lessons: 0,
+        exercises: 1,
         completion: 66,
         hasChildren: false
       },
       {
         id: 'lesson-6-7',
         title: '7 Recipe instructions',
-        lessons: 1,
-        exercises: 7,
+        lessons: 0,
+        exercises: 1,
         completion: 81,
         hasChildren: false
       },
       {
         id: 'lesson-6-8',
         title: 'Checkpoint #5',
-        lessons: 1,
-        exercises: 4,
+        lessons: 0,
+        exercises: 1,
         completion: 89,
         hasChildren: false
       }
@@ -663,7 +663,7 @@ export const additionalChapters: CourseNode[] = [
     id: 'chapter-7',
     title: '7 - Daily routines',
     lessons: 10,
-    exercises: 67,
+    exercises: 14,
     completion: 45,
     hasChildren: true,
     children: [
@@ -779,7 +779,7 @@ export const additionalChapters: CourseNode[] = [
     id: 'chapter-8',
     title: '8 - Travel and transport',
     lessons: 12,
-    exercises: 89,
+    exercises: 16,
     completion: 23,
     hasChildren: true,
     children: [
@@ -911,7 +911,7 @@ export const additionalChapters: CourseNode[] = [
     id: 'chapter-9',
     title: '9 - Shopping',
     lessons: 7,
-    exercises: 41,
+    exercises: 9,
     completion: 91,
     hasChildren: true,
     children: [
@@ -1003,7 +1003,7 @@ export const additionalChapters: CourseNode[] = [
     id: 'chapter-10',
     title: '10 - Weather and seasons',
     lessons: 6,
-    exercises: 38,
+    exercises: 8,
     completion: 67,
     hasChildren: true,
     children: [
