@@ -28,6 +28,8 @@ const Sidebar: React.FC = () => {
     console.log(`Clicked: ${item}`);
     if (item === 'Audio Management') {
       navigate('/ai-voices');
+    } else if (item === 'Course Stats') {
+      navigate('/course-stats');
     }
     setIsMenuOpen(false);
   };

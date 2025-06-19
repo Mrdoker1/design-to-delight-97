@@ -542,18 +542,18 @@ const ResourceBundle: React.FC = () => {
                         
                         {/* Поисковая строка с кнопкой разворачивания тегов */}
                         <div className="mb-2 relative flex-shrink-0">
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-2">
                             <input
                               type="text"
                               placeholder="Search by tag or ID"
                               value={voiceSearchQuery}
                               onChange={handleVoiceSearchChange}
                               onKeyDown={handleSearchKeyDown}
-                              className="flex-1 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="flex-1 min-w-0 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
                             <button
                               onClick={() => setIsTagsExpanded(!isTagsExpanded)}
-                              className="ml-4 mr-2 text-xs text-gray-600 hover:text-gray-800 whitespace-nowrap w-[60px] text-center"
+                              className="flex-shrink-0 px-2 py-1 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors whitespace-nowrap"
                             >
                               {isTagsExpanded ? 'Hide tags' : 'Show tags'}
                             </button>
