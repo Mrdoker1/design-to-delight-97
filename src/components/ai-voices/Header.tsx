@@ -1,4 +1,5 @@
 import React from 'react';
+import { UserMenu } from '../ui/user-menu';
 
 export const Header: React.FC = () => {
   return (
@@ -12,19 +13,7 @@ export const Header: React.FC = () => {
         />
       </div>
       <div className="flex w-[707px] h-12 justify-end items-center gap-6 max-md:w-full max-md:justify-end">
-        <div className="flex w-12 h-12 justify-center items-center shrink-0 relative">
-          <div>
-            <div
-              dangerouslySetInnerHTML={{
-                __html:
-                  "<svg width=\"48\" height=\"48\" viewBox=\"0 0 48 48\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" class=\"avatar-circle\" style=\"width: 48px; height: 48px; fill: #0E58BE; stroke-width: 1.5px; stroke: rgba(0, 0, 0, 0.10)\"> <circle cx=\"24\" cy=\"24\" r=\"24\" fill=\"#0E58BE\"></circle> <circle cx=\"24\" cy=\"24\" r=\"23.25\" stroke=\"black\" stroke-opacity=\"0.1\" stroke-width=\"1.5\"></circle> </svg>",
-              }}
-            />
-          </div>
-          <div className="text-white text-lg font-medium leading-none absolute inset-0 flex items-center justify-center">
-            TL
-          </div>
-        </div>
+        <UserMenu />
       </div>
     </header>
   );

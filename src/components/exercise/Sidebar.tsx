@@ -1,47 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import { UserMenu } from '../ui/user-menu';
 
 const Sidebar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const handleMenuItemClick = (item: string) => {
-    console.log(`Clicked: ${item}`);
-    if (item === 'Audio Management') {
-      navigate('/ai-voices');
-    } else if (item === 'Course Stats') {
-      navigate('/course-stats');
-    }
-    setIsMenuOpen(false);
-  };
-
-  const menuItems = [
-    'Personal Information',
-    'Admin Settings',
-    'Course Stats',
-    'Progress Matching',
-    'Audio Management',
-    'Logout'
-  ];
 
   return (
     <div
@@ -84,6 +46,27 @@ const Sidebar: React.FC = () => {
                 className="text-[#116EEE] self-stretch my-auto"
               >
                 Placement Test
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex w-full mt-2">
+          <div
+            className="justify-center items-center border-[color:var(--Button-Primary-Base,#116EEE)] flex min-h-9 w-full flex-1 shrink basis-[0%] px-6 py-2 rounded-3xl border-2 border-solid max-md:px-5 cursor-pointer hover:bg-[#F0F7FF] transition-colors"
+            onClick={() => navigate('/course-stats')}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="self-stretch flex items-center gap-1 justify-center my-auto">
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets/a61b8aff1f9a4d4b8c540558ab06b276/48b7bab4c39802ef3347bcbce04d86d7d20c1967?placeholderIfAbsent=true"
+                className="aspect-[1] object-contain w-5 self-stretch shrink-0 my-auto"
+                alt="Course stats icon"
+              />
+              <div
+                className="text-[#116EEE] self-stretch my-auto"
+              >
+                Course Stats
               </div>
             </div>
           </div>
@@ -530,40 +513,10 @@ const Sidebar: React.FC = () => {
         </div>
       </nav>
       <div
-        className="bg-[rgba(243,248,254,1)] shadow-[0px_-1px_0px_rgba(214,222,230,1)] absolute z-0 w-[292px] max-w-[292px] text-xs text-white font-normal whitespace-nowrap px-6 py-4 right-0 bottom-0 max-md:px-5"
+        className="bg-[rgba(243,248,254,1)] shadow-[0px_-1px_0px_rgba(214,222,230,1)] absolute z-0 w-full text-xs text-white font-normal whitespace-nowrap px-6 py-4 left-0 bottom-0 max-md:px-5"
       >
         <div className="flex items-center gap-6">
-          <div className="self-stretch w-8 my-auto relative" ref={menuRef}>
-            <div
-              className="stroke-[1px] border bg-[#0E58BE] w-8 h-8 fill-[#0E58BE] px-[3px] rounded-[50%] border-[rgba(0,0,0,0.1)] border-solid flex items-center justify-center text-white cursor-pointer hover:bg-[#0D4FA3] transition-colors"
-              aria-label="User profile"
-              onClick={toggleMenu}
-            >
-              TL
-            </div>
-            
-            {/* Context Menu */}
-            {isMenuOpen && (
-              <div className="absolute bottom-full left-0 mb-2 bg-white shadow-lg rounded-lg p-2 z-50 w-[200px]">
-                {menuItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`p-2 hover:bg-gray-100 rounded cursor-pointer font-normal ${
-                      item === 'Audio Management' 
-                        ? 'text-blue-600 hover:bg-blue-50' 
-                        : 'text-gray-600'
-                    }`}
-                    onClick={() => handleMenuItemClick(item)}
-                  >
-                    {item === 'Audio Management' && (
-                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                    )}
-                    {item}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <UserMenu position="bottom-left" size="small" />
           <img
             src="https://cdn.builder.io/api/v1/image/assets/a61b8aff1f9a4d4b8c540558ab06b276/0d44dbe8a3c22303f567ac4e0619298fdcfec9af?placeholderIfAbsent=true"
             className="aspect-[1] object-contain w-6 self-stretch shrink-0 my-auto"

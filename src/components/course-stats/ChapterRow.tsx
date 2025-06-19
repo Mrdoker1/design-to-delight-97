@@ -85,10 +85,10 @@ export const ChapterRow: React.FC<ChapterRowProps> = ({
             </div>
           </div>
           <div className="text-[#1E2D40] text-base font-bold leading-6 w-[200px] max-md:w-full">
-            {level >= 2 ? '' : lessons}
+            {level >= 1 ? '' : lessons}
           </div>
           <div className="text-[#1E2D40] text-base font-bold leading-6 w-[200px] max-md:w-full">
-            {level >= 2 ? '' : exercises}
+            {level >= 3 ? '' : exercises}
           </div>
           <div className="flex items-center gap-2 flex-[1_0_0] max-md:w-full">
             {level < 2 && (

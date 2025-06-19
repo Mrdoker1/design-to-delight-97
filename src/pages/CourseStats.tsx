@@ -6,7 +6,7 @@ import { CourseStatistics } from '../components/course-stats/CourseStatistics';
 
 export default function CourseStats() {
   return (
-    <div className="flex w-full max-w-[1440px] flex-col items-start gap-14 box-border bg-white mx-auto my-0 p-10 max-md:p-6 max-sm:p-4">
+    <div className="flex w-full flex-col items-start gap-14 box-border bg-white mx-auto my-0 p-10 max-md:p-6 max-sm:p-4">
       <Header />
       
       <main className="flex flex-col items-start gap-6 w-full">

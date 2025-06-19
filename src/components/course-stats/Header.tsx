@@ -1,4 +1,5 @@
 import React from 'react';
+import { UserMenu } from '../ui/user-menu';
 
 export const Header: React.FC = () => {
   return (
@@ -42,26 +43,7 @@ export const Header: React.FC = () => {
         </div>
       </div>
       <div className="flex w-[707px] h-12 justify-end items-center gap-6 max-md:w-auto max-md:justify-start">
-        <div className="flex items-center gap-4">
-          <svg 
-            width="48" 
-            height="48" 
-            viewBox="0 0 48 48" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-12 h-12"
-            role="img"
-            aria-label="User profile"
-          >
-            <circle cx="24" cy="24" r="24" fill="url(#pattern0_profile)"/>
-            <circle cx="24" cy="24" r="23.5" stroke="black" strokeOpacity="0.1"/>
-            <defs>
-              <pattern id="pattern0_profile" patternContentUnits="objectBoundingBox" width="1" height="1">
-                <rect width="1" height="1" fill="#E5E7EB"/>
-              </pattern>
-            </defs>
-          </svg>
-        </div>
+        <UserMenu />
       </div>
     </header>
   );
